@@ -16,10 +16,13 @@ export const CustomCursor: React.FC = () => {
   const smoothY = useSpring(cursorY, springConfig);
 
   useEffect(() => {
-    // Disable on touch devices or reduced motion
+    // Disable on touch devices, mobile screens, or reduced motion
     const finePointer = window.matchMedia('(pointer: fine)').matches;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!finePointer || reduceMotion) {
+    const isMobileWidth = window.innerWidth < 768;
+    const hasTouchScreen = 'ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+
+    if (!finePointer || reduceMotion || isMobileWidth || hasTouchScreen) {
       setIsTouchDevice(true);
       return;
     }

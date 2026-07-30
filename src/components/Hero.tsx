@@ -131,7 +131,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
           scale: [1, 1.1, 0.95, 1],
         }}
         transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[550px] h-[550px] bg-emerald-500/10 dark:bg-emerald-500/10 rounded-full blur-[130px] pointer-events-none"
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[320px] sm:w-[550px] h-[320px] sm:h-[550px] bg-emerald-500/10 dark:bg-emerald-500/10 rounded-full blur-2xl md:blur-[120px] pointer-events-none transform-gpu"
       />
       <motion.div
         animate={{
@@ -140,7 +140,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
           scale: [1, 0.9, 1.08, 1],
         }}
         transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-cyan-500/10 dark:bg-cyan-500/10 rounded-full blur-[110px] pointer-events-none"
+        className="absolute top-1/3 right-1/4 w-[250px] sm:w-[400px] h-[250px] sm:h-[400px] bg-cyan-500/10 dark:bg-cyan-500/10 rounded-full blur-2xl md:blur-[100px] pointer-events-none transform-gpu"
       />
       <motion.div
         animate={{
@@ -148,7 +148,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
           y: [0, 15, -20, 0],
         }}
         transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute bottom-10 left-10 w-[300px] h-[300px] bg-indigo-500/10 dark:bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none"
+        className="absolute bottom-10 left-10 w-[200px] sm:w-[300px] h-[200px] sm:h-[300px] bg-indigo-500/10 dark:bg-indigo-500/10 rounded-full blur-xl md:blur-[90px] pointer-events-none transform-gpu"
       />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 w-full">

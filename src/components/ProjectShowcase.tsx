@@ -68,24 +68,24 @@ export const ProjectShowcase: React.FC = () => {
     setCurrentIndex((prev) => (prev - 1 + filteredProjects.length) % filteredProjects.length);
   };
 
-  // Touch swipe support for mobile devices
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  // Touch swipe support for mobile devices without triggering re-renders on every pixel of move
+  const touchStartRef = React.useRef<number | null>(null);
+  const touchEndRef = React.useRef<number | null>(null);
 
   const minSwipeDistance = 40;
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.touches[0].clientX);
+    touchEndRef.current = null;
+    touchStartRef.current = e.touches[0].clientX;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.touches[0].clientX);
+    touchEndRef.current = e.touches[0].clientX;
   };
 
   const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
+    if (touchStartRef.current === null || touchEndRef.current === null) return;
+    const distance = touchStartRef.current - touchEndRef.current;
     if (distance > minSwipeDistance) {
       handleNext();
     } else if (distance < -minSwipeDistance) {

@@ -14,31 +14,19 @@ import { ResumeModal } from './components/ResumeModal';
 import { ScrollToTop } from './components/ScrollToTop';
 
 export default function App() {
-  const [theme, setTheme] = useState<ThemeMode>(() => {
-    const saved = localStorage.getItem('portfolio_theme');
-    if (saved === 'light' || saved === 'dark' || saved === 'matrix') return saved as ThemeMode;
-    if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-      return 'light';
-    }
-    return 'dark';
-  });
+  const [theme, setTheme] = useState<ThemeMode>('light');
   const [accent, setAccent] = useState<AccentColor>('emerald');
   const [auditOpen, setAuditOpen] = useState(false);
   const [resumeOpen, setResumeOpen] = useState(false);
 
   useEffect(() => {
     const root = document.documentElement;
-    localStorage.setItem('portfolio_theme', theme);
-    if (theme === 'light') {
-      root.classList.remove('dark');
-      root.classList.add('light');
-    } else if (theme === 'matrix') {
-      root.classList.add('dark');
-      root.classList.remove('light');
-    } else {
-      root.classList.add('dark');
-      root.classList.remove('light');
-    }
+    localStorage.setItem('portfolio_theme', 'light');
+    root.classList.remove('dark');
+    root.classList.add('light');
+    
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) metaThemeColor.setAttribute('content', '#f8fafc');
   }, [theme]);
 
   // Handle ESC key to close active modals & lock body scroll when modal is open
