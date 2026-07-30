@@ -78,8 +78,13 @@ async function startServer() {
   const app = express();
   const HOST = process.env.HOST || "0.0.0.0";
   const basePort = Number(process.env.PORT || 5000);
-  const hostsToCheck = HOST === "0.0.0.0" ? [HOST, "::"] : [HOST];
-  const PORT = await findAvailablePort(basePort, hostsToCheck);
+  
+  // In production (e.g. Render/Cloud Run), use assigned PORT directly. In local dev, find available port.
+  let PORT = basePort;
+  if (process.env.NODE_ENV !== "production" && !process.env.PORT) {
+    const hostsToCheck = HOST === "0.0.0.0" ? [HOST, "::"] : [HOST];
+    PORT = await findAvailablePort(basePort, hostsToCheck);
+  }
 
   app.use(express.json());
 
