@@ -222,9 +222,9 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 id="hero-download-resume-btn"
-                className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 hover:text-emerald-600 dark:hover:text-emerald-400 text-sm font-semibold transition-all shadow-sm cursor-pointer"
+                className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-white text-slate-800 border border-slate-200 hover:border-emerald-500/50 hover:text-emerald-600 text-sm font-semibold transition-all shadow-sm cursor-pointer"
               >
-                <Download className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+                <Download className="w-4 h-4 text-emerald-500" />
                 Download Resume
               </motion.a>
 
@@ -233,9 +233,9 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 id="hero-contact-btn"
-                className="flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-sm font-mono transition-all shadow-sm"
+                className="flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-white/80 text-slate-700 border border-slate-200 hover:border-slate-300 text-sm font-mono transition-all shadow-sm"
               >
-                <Mail className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                <Mail className="w-4 h-4 text-cyan-600" />
                 Contact Me
               </motion.a>
             </div>
@@ -265,7 +265,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
                   rel="noreferrer"
                   whileHover={{ scale: 1.12, y: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md transition-all"
+                  className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-emerald-600 hover:border-slate-300 hover:shadow-md transition-all"
                   title={soc.label}
                 >
                   <soc.icon className="w-4 h-4" />
@@ -286,11 +286,11 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
           >
             <motion.div
               style={{
-                rotateX,
-                rotateY,
-                transformStyle: "preserve-3d",
+                rotateX: isPointerEffectsEnabled ? rotateX : undefined,
+                rotateY: isPointerEffectsEnabled ? rotateY : undefined,
+                transformStyle: isPointerEffectsEnabled ? "preserve-3d" : "flat",
               }}
-              className="relative mx-auto max-w-md lg:max-w-none rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-2xl overflow-hidden backdrop-blur-2xl group transition-shadow duration-300 hover:shadow-emerald-500/10"
+              className="relative mx-auto max-w-md lg:max-w-none rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden backdrop-blur-md group transition-shadow duration-300 hover:shadow-emerald-500/10"
             >
               {/* Dynamic Mouse Spotlight Overlay */}
               <motion.div

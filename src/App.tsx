@@ -58,13 +58,7 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen selection:bg-emerald-500 selection:text-slate-950 font-sans transition-colors duration-500 ${
-      theme === 'light' 
-        ? 'bg-slate-50 text-slate-900' 
-        : theme === 'matrix' 
-          ? 'bg-black text-green-400 font-mono' 
-          : 'bg-slate-950 text-slate-100'
-    }`}>
+    <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-emerald-500 selection:text-slate-950 font-sans">
       
       {/* Precision Custom Cursor */}
       <CustomCursor />

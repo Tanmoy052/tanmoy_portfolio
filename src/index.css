@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@variant dark (.dark &);
+
+:root, html, body {
+  color-scheme: light !important;
+}
+
 @layer base {
   * {
     -webkit-font-smoothing: antialiased;
@@ -15,6 +21,8 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-tap-highlight-color: transparent;
     text-rendering: optimizeLegibility;
+    background-color: #f8fafc;
+    color: #0f172a;
   }
 
   .transform-gpu {
