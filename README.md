@@ -81,8 +81,8 @@ Ensure you have the following installed on your machine:
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/Tanmoy052/tanmoy-pal---developer-portfolio.git
-   cd tanmoy-pal---developer-portfolio
+   git clone https://github.com/Tanmoy052/tanmoy_portfolio.git
+   cd tanmoy_portfolio
    ```
 
 2. **Install Dependencies**
