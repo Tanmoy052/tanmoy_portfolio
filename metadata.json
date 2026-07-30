@@ -1,0 +1,6 @@
+{
+  "name": "Tanmoy Pal - Developer Portfolio",
+  "description": "An interactive, high-performance full-stack developer portfolio for Tanmoy Pal showcasing projects, tech stack, interactive terminal, project estimator, and AI assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
