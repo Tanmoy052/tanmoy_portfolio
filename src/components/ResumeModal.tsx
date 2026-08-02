@@ -30,7 +30,7 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({ isOpen, onClose }) => 
 
           <div className="flex items-center gap-2">
             <a
-              href="/Tanmoy%20Pal%20Resume.pdf"
+              href="/Tanmoy_Pal_Resume.pdf"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition-colors shadow-xs"
@@ -55,7 +55,7 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({ isOpen, onClose }) => 
         {/* Embedded PDF Viewer */}
         <div className="w-full h-[80vh] bg-slate-100 dark:bg-slate-950">
           <iframe 
-            src="/Tanmoy%20Pal%20Resume.pdf#toolbar=1" 
+            src="/Tanmoy_Pal_Resume.pdf#toolbar=1" 
             title="Tanmoy Pal Resume PDF"
             className="w-full h-full border-0"
           />

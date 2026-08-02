@@ -216,7 +216,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
               </motion.a>
 
               <motion.a
-                href="/Tanmoy%20Pal%20Resume.pdf"
+                href="/Tanmoy_Pal_Resume.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.04, y: -2 }}
