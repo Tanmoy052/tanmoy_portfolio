@@ -215,6 +215,16 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
                 </span>
               </motion.a>
 
+              <motion.button
+                onClick={onOpenResume}
+                whileHover={{ scale: 1.04, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                id="hero-download-resume-btn"
+                className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-white text-slate-800 border border-slate-200 hover:border-emerald-500/50 hover:text-emerald-600 text-sm font-semibold transition-all shadow-sm cursor-pointer"
+              >
+                <Download className="w-4 h-4 text-emerald-500" />
+                Download Resume
+              </motion.button>
 
               <motion.a
                 href="#contact"
