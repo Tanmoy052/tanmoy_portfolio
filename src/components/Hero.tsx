@@ -215,9 +215,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
                 </span>
               </motion.a>
 
-              <motion.a
-                href="/Tanmoy_Pal_Resume.pdf"
-                download="Tanmoy_Pal_Resume.pdf"
+              <motion.button
+                onClick={onOpenResume}
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 id="hero-download-resume-btn"
@@ -225,7 +224,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
               >
                 <Download className="w-4 h-4 text-emerald-500" />
                 Download Resume
-              </motion.a>
+              </motion.button>
 
               <motion.a
                 href="#contact"
