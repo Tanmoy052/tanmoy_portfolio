@@ -217,8 +217,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
 
               <motion.a
                 href="/Tanmoy_Pal_Resume.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
+                download="Tanmoy_Pal_Resume.pdf"
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 id="hero-download-resume-btn"
