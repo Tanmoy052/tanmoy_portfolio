@@ -151,13 +151,6 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onOpenResume }) => {
                   </div>
                 </div>
 
-                <button
-                  onClick={onOpenResume}
-                  className="inline-flex items-center gap-2 px-4.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-semibold text-xs shadow-md shadow-emerald-600/20 hover:shadow-emerald-500/30 transition-all duration-200 cursor-pointer active:scale-95"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Download Resume</span>
-                </button>
               </div>
             </motion.div>
 
