@@ -145,8 +145,8 @@ export const ProjectShowcase: React.FC = () => {
     <section id="projects" className="py-24 bg-slate-50/60 dark:bg-slate-950 text-slate-900 dark:text-slate-100 relative border-t border-slate-200 dark:border-slate-900 transition-colors duration-300 overflow-hidden">
       
       {/* Background Ambient Glows matching whole website theme */}
-      <div className="absolute top-1/3 left-1/4 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="hidden sm:block absolute top-1/3 left-1/4 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="hidden sm:block absolute bottom-10 right-10 w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
 
       {/* Increased Container Width from 7xl (1280px) to 1440px for roomier cards */}
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
@@ -197,7 +197,7 @@ export const ProjectShowcase: React.FC = () => {
           <button
             onClick={handlePrev}
             aria-label="Previous Projects"
-            className="absolute left-1 sm:left-0 top-1/2 -translate-y-1/2 sm:-translate-x-6 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-xl hover:bg-slate-50 dark:hover:bg-slate-800 hover:scale-110 active:scale-95 transition-all flex items-center justify-center group"
+            className="absolute left-1 sm:left-0 top-1/2 -translate-y-1/2 sm:-translate-x-6 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition-colors flex items-center justify-center group"
           >
             <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5] text-slate-700 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
           </button>
@@ -236,7 +236,7 @@ export const ProjectShowcase: React.FC = () => {
           <button
             onClick={handleNext}
             aria-label="Next Projects"
-            className="absolute right-1 sm:right-0 top-1/2 -translate-y-1/2 sm:translate-x-6 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-xl hover:bg-slate-50 dark:hover:bg-slate-800 hover:scale-110 active:scale-95 transition-all flex items-center justify-center group"
+            className="absolute right-1 sm:right-0 top-1/2 -translate-y-1/2 sm:translate-x-6 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition-colors flex items-center justify-center group"
           >
             <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5] text-slate-700 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
           </button>
@@ -314,13 +314,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onInspect }) => {
             <img
               src={project.image}
               alt={project.title}
-              className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
+              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
               loading="lazy"
             />
             <div className="absolute inset-0 bg-slate-950/10 group-hover:bg-slate-950/30 transition-colors duration-300" />
 
             {/* Quick Action Overlay Buttons on Image Hover */}
-            <div className="absolute inset-0 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 bg-slate-950/40 backdrop-blur-[2px]">
+            <div className="absolute inset-0 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 bg-slate-950/40">
               <a
                 href={project.githubUrl}
                 target="_blank"
@@ -344,7 +344,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onInspect }) => {
             {/* Featured Badge */}
             {project.featured && (
               <div className="absolute top-3 left-3 z-10">
-                <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/90 text-[11px] font-bold text-slate-950 shadow-md backdrop-blur-sm">
+                <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/90 text-[11px] font-bold text-slate-950 shadow-sm">
                   <Star className="w-3 h-3 fill-slate-950 text-slate-950" /> Featured
                 </span>
               </div>

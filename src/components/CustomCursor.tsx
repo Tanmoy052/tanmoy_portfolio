@@ -113,7 +113,7 @@ export const CustomCursor: React.FC = () => {
           opacity: isHovered ? 0.85 : 0.4
         }}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-        className="fixed top-0 left-0 w-8 h-8 rounded-full pointer-events-none z-50 border border-emerald-400/50 bg-emerald-500/10 backdrop-blur-[1px] shadow-[0_0_15px_rgba(16,185,129,0.25)]"
+        className="fixed top-0 left-0 w-8 h-8 rounded-full pointer-events-none z-50 border border-emerald-400/50 bg-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.25)] transform-gpu will-change-transform"
       />
 
       {/* Inner Precision Dot */}
@@ -128,7 +128,7 @@ export const CustomCursor: React.FC = () => {
           scale: isClicking ? 0.5 : isHovered ? 1.3 : 1
         }}
         transition={{ type: 'spring', stiffness: 500, damping: 28 }}
-        className="fixed top-0 left-0 w-2 h-2 rounded-full pointer-events-none z-50 bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.8)]"
+        className="fixed top-0 left-0 w-2 h-2 rounded-full pointer-events-none z-50 bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.8)] transform-gpu will-change-transform"
       />
     </>
   );

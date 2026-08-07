@@ -123,33 +123,10 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
       {/* Background Animated Gradient Orbs & Mesh Grid */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b12_1px,transparent_1px),linear-gradient(to_bottom,#1e293b12_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_10%,#000_70%,transparent_100%)] pointer-events-none" />
 
-      {/* Floating Animated Mesh Orbs */}
-      <motion.div
-        animate={{
-          x: [0, 25, -20, 0],
-          y: [0, -30, 20, 0],
-          scale: [1, 1.1, 0.95, 1],
-        }}
-        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[320px] sm:w-[550px] h-[320px] sm:h-[550px] bg-emerald-500/10 dark:bg-emerald-500/10 rounded-full blur-2xl md:blur-[120px] pointer-events-none transform-gpu"
-      />
-      <motion.div
-        animate={{
-          x: [0, -35, 25, 0],
-          y: [0, 25, -25, 0],
-          scale: [1, 0.9, 1.08, 1],
-        }}
-        transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-1/3 right-1/4 w-[250px] sm:w-[400px] h-[250px] sm:h-[400px] bg-cyan-500/10 dark:bg-cyan-500/10 rounded-full blur-2xl md:blur-[100px] pointer-events-none transform-gpu"
-      />
-      <motion.div
-        animate={{
-          x: [0, 20, -15, 0],
-          y: [0, 15, -20, 0],
-        }}
-        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute bottom-10 left-10 w-[200px] sm:w-[300px] h-[200px] sm:h-[300px] bg-indigo-500/10 dark:bg-indigo-500/10 rounded-full blur-xl md:blur-[90px] pointer-events-none transform-gpu"
-      />
+      {/* High-Performance Ambient Glow Orbs */}
+      <div className="hidden sm:block absolute top-1/4 left-1/2 -translate-x-1/2 w-[320px] sm:w-[500px] h-[320px] sm:h-[500px] bg-emerald-500/10 dark:bg-emerald-500/10 rounded-full blur-3xl pointer-events-none transform-gpu" />
+      <div className="hidden sm:block absolute top-1/3 right-1/4 w-[250px] sm:w-[380px] h-[250px] sm:h-[380px] bg-cyan-500/10 dark:bg-cyan-500/10 rounded-full blur-3xl pointer-events-none transform-gpu" />
+      <div className="hidden sm:block absolute bottom-10 left-10 w-[200px] sm:w-[280px] h-[200px] sm:h-[280px] bg-indigo-500/10 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none transform-gpu" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -161,10 +138,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
             className="lg:col-span-7 space-y-6 text-center lg:text-left"
           >
             {/* Status Pill */}
-            <motion.div
-              whileHover={{ scale: 1.03 }}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-emerald-500/30 shadow-sm dark:shadow-inner backdrop-blur-md"
-            >
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-emerald-500/30 shadow-sm">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
@@ -172,7 +146,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
               <span className="text-xs font-semibold tracking-wide text-emerald-600 dark:text-emerald-400">
                 {PERSONAL_INFO.status}
               </span>
-            </motion.div>
+            </div>
 
             {/* Title Heading */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight leading-[1.1]">
@@ -185,13 +159,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
             {/* Dynamic Typewriter Title */}
             <div className="h-10 text-xl sm:text-2xl font-mono text-emerald-600 dark:text-emerald-400 flex items-center justify-center lg:justify-start">
               <span>{displayText}</span>
-              <motion.span
-                animate={{ opacity: [1, 0, 1] }}
-                transition={{ duration: 0.8, repeat: Infinity }}
-                className="ml-1 text-cyan-500 dark:text-cyan-400"
-              >
-                |
-              </motion.span>
+              <span className="ml-1 text-cyan-500 dark:text-cyan-400 animate-[blink_1s_step-end_infinite]">|</span>
             </div>
 
             {/* Bio */}
@@ -201,41 +169,35 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
 
             {/* CTA Buttons */}
             <div className="pt-2 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center lg:justify-start gap-3 sm:gap-4 w-full">
-              <motion.a
+              <a
                 href="#projects"
-                whileHover={{ scale: 1.04, y: -2 }}
-                whileTap={{ scale: 0.98 }}
                 id="hero-view-projects-btn"
-                className="group relative flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/35 transition-all overflow-hidden"
+                className="group relative flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/35 transition-shadow overflow-hidden active:scale-[0.98]"
               >
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   View My Work
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </span>
-              </motion.a>
+              </a>
 
-              <motion.button
+              <button
                 onClick={onOpenResume}
-                whileHover={{ scale: 1.04, y: -2 }}
-                whileTap={{ scale: 0.98 }}
                 id="hero-download-resume-btn"
-                className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-white text-slate-800 border border-slate-200 hover:border-emerald-500/50 hover:text-emerald-600 text-sm font-semibold transition-all shadow-sm cursor-pointer"
+                className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-white text-slate-800 border border-slate-200 hover:border-emerald-500/50 hover:text-emerald-600 text-sm font-semibold transition-colors shadow-sm cursor-pointer active:scale-[0.98]"
               >
                 <Download className="w-4 h-4 text-emerald-500" />
                 Download Resume
-              </motion.button>
+              </button>
 
-              <motion.a
+              <a
                 href="#contact"
-                whileHover={{ scale: 1.04, y: -2 }}
-                whileTap={{ scale: 0.98 }}
                 id="hero-contact-btn"
-                className="flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-white/80 text-slate-700 border border-slate-200 hover:border-slate-300 text-sm font-mono transition-all shadow-sm"
+                className="flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-white text-slate-700 border border-slate-200 hover:border-slate-300 text-sm font-mono transition-colors shadow-sm active:scale-[0.98]"
               >
                 <Mail className="w-4 h-4 text-cyan-600" />
                 Contact Me
-              </motion.a>
+              </a>
             </div>
 
             {/* Social Channels */}
@@ -245,38 +207,28 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
               </span>
               {[
                 { href: PERSONAL_INFO.github, icon: Github, label: "GitHub" },
-                {
-                  href: PERSONAL_INFO.linkedin,
-                  icon: Linkedin,
-                  label: "LinkedIn",
-                },
-                {
-                  href: `mailto:${PERSONAL_INFO.email}`,
-                  icon: Mail,
-                  label: "Email",
-                },
+                { href: PERSONAL_INFO.linkedin, icon: Linkedin, label: "LinkedIn" },
+                { href: `mailto:${PERSONAL_INFO.email}`, icon: Mail, label: "Email" },
               ].map((soc, i) => (
-                <motion.a
+                <a
                   key={i}
                   href={soc.href}
                   target={soc.href.startsWith("mailto") ? "_self" : "_blank"}
                   rel="noreferrer"
-                  whileHover={{ scale: 1.12, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-emerald-600 hover:border-slate-300 hover:shadow-md transition-all"
+                  className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-emerald-600 hover:border-emerald-300 hover:shadow-sm transition-colors active:scale-95"
                   title={soc.label}
                 >
                   <soc.icon className="w-4 h-4" />
-                </motion.a>
+                </a>
               ))}
             </div>
           </motion.div>
 
-          {/* Right Column - 3D Interactive Card Parallax */}
+          {/* Right Column - 3D Interactive Card (desktop only parallax) */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+            transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
             className="lg:col-span-5 relative perspective-1000"
             onMouseMove={isPointerEffectsEnabled ? handleMouseMove : undefined}
             onMouseLeave={isPointerEffectsEnabled ? handleMouseLeave : undefined}
@@ -288,15 +240,10 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
                 rotateY: isPointerEffectsEnabled ? rotateY : undefined,
                 transformStyle: isPointerEffectsEnabled ? "preserve-3d" : "flat",
               }}
-              className="relative mx-auto max-w-md lg:max-w-none rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden backdrop-blur-md group transition-shadow duration-300 hover:shadow-emerald-500/10"
+              className="relative mx-auto max-w-md lg:max-w-none rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden group"
             >
-              {/* Dynamic Mouse Spotlight Overlay */}
-              <motion.div
-                className="pointer-events-none absolute -inset-px opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"
-                style={{
-                  background: `radial-gradient(600px circle at 50% 50%, rgba(16, 185, 129, 0.08), transparent 40%)`,
-                }}
-              />
+              {/* Spotlight: desktop-only, CSS-driven */}
+              <div className="hidden lg:block pointer-events-none absolute -inset-px opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" style={{ background: `radial-gradient(500px circle at 50% 50%, rgba(16,185,129,0.07), transparent 40%)` }} />
 
               {/* Terminal Window Header */}
               <div className="px-4 py-3 bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between relative z-20">
@@ -425,19 +372,18 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
 
         {/* Stats Grid */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ duration: 0.5 }}
           className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
         >
           {PERSONAL_INFO.stats.map((stat, i) => (
-            <motion.div
+            <div
               key={i}
-              whileHover={{ scale: 1.03, y: -3 }}
-              className="p-5 rounded-2xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 backdrop-blur-md hover:border-emerald-500/30 transition-all flex items-center gap-4 group shadow-sm dark:shadow-md"
+              className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/30 transition-colors flex items-center gap-4 shadow-sm"
             >
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
@@ -448,7 +394,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
                   {stat.label}
                 </p>
               </div>
-            </motion.div>
+            </div>
           ))}
         </motion.div>
       </div>

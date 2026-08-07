@@ -12,7 +12,7 @@ export const ExperienceTimeline: React.FC = () => {
 
       {/* SECTION 1: EXPERIENCE */}
       <section id="experience" className="py-20 sm:py-24 border-t border-slate-200 dark:border-slate-900 relative">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-full max-w-5xl h-96 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-full max-w-5xl h-80 bg-blue-500/5 dark:bg-blue-500/8 rounded-full pointer-events-none" />
 
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
@@ -70,7 +70,7 @@ export const ExperienceTimeline: React.FC = () => {
                   <div className="absolute -left-[31px] sm:-left-[47px] top-7 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-blue-600 dark:bg-blue-500 border-2 sm:border-3 border-white dark:border-slate-950 shadow-md ring-4 ring-blue-500/20 group-hover:scale-125 group-hover:ring-blue-500/40 transition-all duration-300 z-10" />
 
                   {/* Experience Card */}
-                  <div className="bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-xl hover:border-blue-300 dark:hover:border-blue-800/80 transition-all duration-300 relative overflow-hidden">
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-800/80 transition-[shadow,border-color] duration-300 relative overflow-hidden">
                     {/* Subtle Top Accent Line */}
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-500 opacity-80 group-hover:opacity-100 transition-opacity" />
 
@@ -155,7 +155,7 @@ export const ExperienceTimeline: React.FC = () => {
 
       {/* SECTION 2: EDUCATION */}
       <section id="education" className="py-20 sm:py-24 border-t border-slate-200 dark:border-slate-900 relative">
-        <div className="absolute top-1/2 left-1/4 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/4 w-72 h-72 bg-blue-500/5 rounded-full pointer-events-none" />
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
@@ -200,7 +200,7 @@ export const ExperienceTimeline: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: idx * 0.1 }}
-                className="bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-6 sm:p-7 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+                className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-6 sm:p-7 shadow-sm hover:shadow-md hover:border-blue-300/50 transition-[shadow,border-color] duration-200 flex flex-col justify-between"
               >
                 <div className="space-y-4">
                   {/* Header row with Graduation Icon & Title */}

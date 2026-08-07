@@ -108,3 +108,23 @@
 .animate-slide-left {
   animation: slideLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Typewriter cursor blink – CSS-driven, zero JS overhead */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Mobile: suppress heavy box-shadows and reduce repaints */
+@media (max-width: 768px) {
+  .shadow-2xl { box-shadow: 0 4px 16px 0 rgba(0,0,0,.08) !important; }
+  .shadow-xl  { box-shadow: 0 4px 12px 0 rgba(0,0,0,.07) !important; }
+  .dark\:shadow-2xl { box-shadow: none !important; }
+  /* Disable pointer-dependent hover glows that don't apply on touch */
+  .hover\:shadow-emerald-500\/35:hover { box-shadow: none; }
+}
+
+/* Contain layout for section backgrounds so blur doesn't affect outer layers */
+section {
+  contain: layout style;
+}

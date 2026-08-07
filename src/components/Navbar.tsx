@@ -22,51 +22,34 @@ export const Navbar: React.FC<NavbarProps> = () => {
     { id: 'contact', label: 'Contact' }
   ];
 
-  // Scrollspy to automatically update activeNav based on scroll position
+  // Efficient IntersectionObserver Scrollspy for zero-lag scroll tracking without forced layout reflows
   useEffect(() => {
-    let rafId: number | null = null;
+    const observerOptions: IntersectionObserverInit = {
+      root: null,
+      rootMargin: '-20% 0px -65% 0px',
+      threshold: 0
+    };
 
-    const updateActive = () => {
-      rafId = null;
+    const observedElements: HTMLElement[] = [];
 
-      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 60) {
-        setActiveNav((prev) => (prev === 'contact' ? prev : 'contact'));
-        return;
-      }
-
-      if (window.scrollY < 150) {
-        setActiveNav((prev) => (prev === 'home' ? prev : 'home'));
-        return;
-      }
-
-      const scrollPosition = window.scrollY + 180;
-
-      for (let i = navLinks.length - 1; i >= 0; i--) {
-        const link = navLinks[i];
-        if (link.id === 'home') continue;
-
-        const section = document.getElementById(link.id);
-        if (!section) continue;
-
-        const top = section.offsetTop;
-        if (scrollPosition >= top) {
-          setActiveNav((prev) => (prev === link.id ? prev : link.id));
-          break;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveNav(entry.target.id);
         }
+      });
+    }, observerOptions);
+
+    navLinks.forEach((link) => {
+      const el = document.getElementById(link.id);
+      if (el) {
+        observer.observe(el);
+        observedElements.push(el);
       }
-    };
-
-    const handleScroll = () => {
-      if (rafId != null) return;
-      rafId = window.requestAnimationFrame(updateActive);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
+    });
 
     return () => {
-      if (rafId != null) window.cancelAnimationFrame(rafId);
-      window.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
     };
   }, []);
 
@@ -86,7 +69,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 shadow-xs transition-colors duration-300">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-slate-950 border-b border-slate-200/80 dark:border-slate-800/80 shadow-sm transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
         
         {/* Brand Name on the Left */}

@@ -61,8 +61,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onOpenResume }) => {
     <section id="about" className="py-24 relative bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 border-t border-slate-200 dark:border-slate-900/80">
 
       {/* Background Ambient Illumination */}
-      <div className="absolute top-1/4 left-10 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="hidden sm:block absolute top-1/4 left-10 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="hidden sm:block absolute bottom-1/4 right-10 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
@@ -109,7 +109,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onOpenResume }) => {
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="h-full flex flex-col justify-between space-y-6 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800/90 rounded-2xl p-7 sm:p-8 lg:p-9 shadow-xl dark:shadow-2xl backdrop-blur-md"
+              className="h-full flex flex-col justify-between space-y-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-7 sm:p-8 lg:p-9 shadow-md"
             >
               <div>
                 <div className="flex items-center gap-3.5 pb-4 border-b border-slate-200 dark:border-slate-800 mb-5">
@@ -161,25 +161,26 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onOpenResume }) => {
             initial={{ opacity: 0, scale: 0.95, x: 20 }}
             whileInView={{ opacity: 1, scale: 1, x: 0 }}
             viewport={{ once: true }}
-            className="lg:col-span-4 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800/90 rounded-2xl p-5 sm:p-6 shadow-xl dark:shadow-2xl backdrop-blur-md relative overflow-hidden group max-w-sm w-full mx-auto lg:ml-auto lg:mr-0 flex flex-col justify-between space-y-4"
+            className="lg:col-span-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-md relative overflow-hidden group max-w-sm w-full mx-auto lg:ml-auto lg:mr-0 flex flex-col justify-between space-y-4"
           >
-            {/* Ambient Corner Glow */}
-            <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none" />
-            <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-cyan-500/20 rounded-full blur-2xl pointer-events-none" />
+            {/* Subtle corner accents – static, no blur */}
+            <div className="absolute -top-8 -right-8 w-24 h-24 bg-emerald-500/15 rounded-full pointer-events-none" />
+            <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-cyan-500/15 rounded-full pointer-events-none" />
 
             <div className="space-y-3.5">
               {/* Photo Container with capped width and compact aspect ratio */}
-              <div className="relative w-full max-w-[260px] aspect-[4/5] max-h-72 mx-auto rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md group-hover:border-emerald-500/40 transition-all duration-300">
+              <div className="relative w-full max-w-[260px] aspect-[4/5] max-h-72 mx-auto rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md group-hover:border-emerald-500/40 transition-colors duration-300">
                 <img
                   src="/tanmoy_pal.png"
                   alt={PERSONAL_INFO.name}
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover object-center filter brightness-[1.08] contrast-[1.03] group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover object-center brightness-[1.05]"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-60" />
 
                 {/* Live Availability Badge on Photo */}
-                <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between text-[11px] font-medium text-white bg-slate-950/80 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10">
+                <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between text-[11px] font-medium text-white bg-slate-950/85 px-2.5 py-1 rounded-lg border border-white/10">
                   <span className="flex items-center gap-1.5">
                     <span className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -235,7 +236,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onOpenResume }) => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08 }}
-              className="p-5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800/90 text-center space-y-1 shadow-lg dark:shadow-xl backdrop-blur-md hover:border-slate-300 dark:hover:border-slate-700 transition-all"
+              className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center space-y-1 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
             >
               <div className="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-cyan-500 dark:from-emerald-400 dark:to-cyan-400">
                 {st.value}
