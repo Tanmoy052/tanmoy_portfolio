@@ -54,9 +54,32 @@ export interface AuditPoint {
   impactScore: string;
 }
 
-export interface ChatMessage {
-  id: string;
-  sender: 'user' | 'ai';
-  text: string;
-  timestamp: string;
+export interface PersonalInfo {
+  name: string;
+  tagline: string;
+  avatar: string;
+  subTagline: string;
+  bio: string;
+  email: string;
+  phone: string;
+  github: string;
+  linkedin: string;
+  twitter: string;
+  location: string;
+  status: string;
+  stats: { label: string; value: string }[];
+}
+
+export interface ResumeData {
+  pdfUrl: string;
+  headline?: string;
+  lastUpdated?: string;
+}
+
+export interface PortfolioData {
+  about: PersonalInfo;
+  resume: ResumeData;
+  skills: SkillCategory[];
+  projects: Project[];
+  experiences: TimelineItem[];
 }

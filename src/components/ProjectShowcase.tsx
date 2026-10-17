@@ -13,15 +13,18 @@ import {
 import { PROJECTS } from '../data/portfolioData';
 import { Project } from '../types';
 import { ProjectDetailModal } from './ProjectDetailModal';
+import { usePortfolio } from '../context/PortfolioContext';
 
 export const ProjectShowcase: React.FC = () => {
+  const { projects } = usePortfolio();
+  const currentProjects = projects && projects.length > 0 ? projects : PROJECTS;
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [activeModalProject, setActiveModalProject] = useState<Project | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [direction, setDirection] = useState<number>(1); // 1 = Next (right to left), -1 = Prev (left to right)
   const [itemsPerPage, setItemsPerPage] = useState<number>(3);
 
-  const categories = ['All', 'Full-Stack MERN', 'AI Integration', 'E-Commerce', 'System Architecture'];
+  const categories = ['All', 'Full Stack', 'Frontend', 'AI & ML', 'Mini Apps'];
 
   // Handle responsive items per page
   useEffect(() => {
@@ -41,12 +44,12 @@ export const ProjectShowcase: React.FC = () => {
   }, []);
 
   const filteredProjects = selectedCategory === 'All'
-    ? PROJECTS
-    : PROJECTS.filter((p) => p.category === selectedCategory || p.tags.some(t => t.toLowerCase().includes(selectedCategory.toLowerCase())));
+    ? currentProjects
+    : currentProjects.filter((p) => p.category === selectedCategory || p.tags.some(t => t.toLowerCase().includes(selectedCategory.toLowerCase())));
 
   const getCategoryCount = (cat: string) => {
-    if (cat === 'All') return PROJECTS.length;
-    return PROJECTS.filter((p) => p.category === cat || p.tags.some(t => t.toLowerCase().includes(cat.toLowerCase()))).length;
+    if (cat === 'All') return currentProjects.length;
+    return currentProjects.filter((p) => p.category === cat || p.tags.some(t => t.toLowerCase().includes(cat.toLowerCase()))).length;
   };
 
   const handleCategoryChange = (cat: string) => {

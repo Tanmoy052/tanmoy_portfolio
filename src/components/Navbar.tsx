@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Lock } from 'lucide-react';
 
 interface NavbarProps {
   theme?: string;
   setTheme?: (t: any) => void;
+  onOpenAdmin?: () => void;
   [key: string]: any;
 }
 
-export const Navbar: React.FC<NavbarProps> = () => {
+export const Navbar: React.FC<NavbarProps> = ({ onOpenAdmin }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeNav, setActiveNav] = useState('home');
 
@@ -114,6 +115,13 @@ export const Navbar: React.FC<NavbarProps> = () => {
               </a>
             );
           })}
+          <button
+            onClick={onOpenAdmin || (() => { window.history.pushState({}, '', '/admin'); window.dispatchEvent(new PopStateEvent('popstate')); })}
+            className="p-2 text-slate-500 hover:text-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition"
+            title="Admin Console"
+          >
+            <Lock className="w-4 h-4" />
+          </button>
         </nav>
 
         {/* Mobile View Toggle */}
@@ -154,6 +162,20 @@ export const Navbar: React.FC<NavbarProps> = () => {
               {link.label}
             </a>
           ))}
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              if (onOpenAdmin) onOpenAdmin();
+              else {
+                window.history.pushState({}, '', '/admin');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }
+            }}
+            className="w-full text-left py-2.5 px-3 rounded-lg text-sm font-medium text-emerald-500 hover:bg-emerald-500/10 flex items-center gap-2 transition"
+          >
+            <Lock className="w-4 h-4" />
+            Admin Console
+          </button>
         </motion.div>
       )}
     </header>

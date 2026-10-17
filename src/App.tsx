@@ -12,12 +12,73 @@ import { Footer } from './components/Footer';
 import { PortfolioAuditModal } from './components/PortfolioAuditModal';
 import { ResumeModal } from './components/ResumeModal';
 import { ScrollToTop } from './components/ScrollToTop';
+import { PortfolioProvider } from './context/PortfolioContext';
+import { AdminPanel } from './components/admin/AdminPanel';
+import { AdminLogin } from './components/admin/AdminLogin';
 
 export default function App() {
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [accent, setAccent] = useState<AccentColor>('emerald');
   const [auditOpen, setAuditOpen] = useState(false);
   const [resumeOpen, setResumeOpen] = useState(false);
+
+  // Path & Hash based routing for /admin and /admin/login
+  const [currentPath, setCurrentPath] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const p = window.location.pathname;
+      const h = window.location.hash;
+      if (p === '/admin/login' || h === '#admin/login' || h === '#login') return '/admin/login';
+      if (p === '/admin' || p.startsWith('/admin') || h === '#admin') return '/admin';
+    }
+    return '/';
+  });
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const p = window.location.pathname;
+      const h = window.location.hash;
+      if (p === '/admin/login' || h === '#admin/login' || h === '#login') {
+        setCurrentPath('/admin/login');
+      } else if (p === '/admin' || p.startsWith('/admin') || h === '#admin') {
+        setCurrentPath('/admin');
+      } else {
+        setCurrentPath('/');
+      }
+    };
+
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
+  }, []);
+
+  const navigateToAdmin = () => {
+    const isAuthed = typeof window !== 'undefined' && sessionStorage.getItem('admin_auth') === 'true';
+    const target = isAuthed ? '/admin' : '/admin/login';
+    window.history.pushState({}, '', target);
+    setCurrentPath(target);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const navigateToPortfolio = () => {
+    window.history.pushState({}, '', '/');
+    setCurrentPath('/');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleLoginSuccess = () => {
+    window.history.pushState({}, '', '/admin');
+    setCurrentPath('/admin');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleLogout = () => {
+    window.history.pushState({}, '', '/admin/login');
+    setCurrentPath('/admin/login');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     const root = document.documentElement;
@@ -58,56 +119,74 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-emerald-500 selection:text-slate-950 font-sans">
-      
-      {/* Precision Custom Cursor */}
-      <CustomCursor />
+    <PortfolioProvider>
+      <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-emerald-500 selection:text-slate-950 font-sans">
+        
+        {/* Precision Custom Cursor */}
+        <CustomCursor />
 
-      {/* Main Glass Navigation Header */}
-      <Navbar
-        theme={theme}
-        setTheme={setTheme}
-        accent={accent}
-        setAccent={setAccent}
-        onOpenAudit={() => setAuditOpen(true)}
-        onOpenResume={() => setResumeOpen(true)}
-        onOpenTerminal={scrollToAbout}
-      />
+        {currentPath === '/admin/login' ? (
+          /* Dedicated Admin Login Route */
+          <AdminLogin
+            onLoginSuccess={handleLoginSuccess}
+            onBackToPortfolio={navigateToPortfolio}
+          />
+        ) : currentPath === '/admin' ? (
+          /* Protected Admin Dashboard Route */
+          <AdminPanel
+            onBackToPortfolio={navigateToPortfolio}
+            onLogout={handleLogout}
+          />
+        ) : (
+          /* Public Portfolio View */
+          <>
+            {/* Main Glass Navigation Header */}
+            <Navbar
+              theme={theme}
+              setTheme={setTheme}
+              accent={accent}
+              setAccent={setAccent}
+              onOpenAudit={() => setAuditOpen(true)}
+              onOpenResume={() => setResumeOpen(true)}
+              onOpenTerminal={scrollToAbout}
+              onOpenAdmin={navigateToAdmin}
+            />
 
-      {/* Page Sections */}
-      <main>
-        <Hero
-          onOpenResume={() => setResumeOpen(true)}
-        />
+            {/* Page Sections */}
+            <main>
+              <Hero onOpenResume={() => setResumeOpen(true)} />
 
-        <AboutSection onOpenResume={() => setResumeOpen(true)} />
+              <AboutSection onOpenResume={() => setResumeOpen(true)} />
 
-        <SkillsMatrix />
+              <SkillsMatrix />
 
-        <ProjectShowcase />
+              <ProjectShowcase />
 
-        <ExperienceTimeline />
+              <ExperienceTimeline />
 
-        <ContactSection />
-      </main>
+              <ContactSection />
+            </main>
 
-      {/* Footer */}
-      <Footer />
+            {/* Footer */}
+            <Footer onOpenAdmin={navigateToAdmin} />
 
-      {/* Modals & Drawers */}
-      <PortfolioAuditModal
-        isOpen={auditOpen}
-        onClose={() => setAuditOpen(false)}
-      />
+            {/* Modals & Drawers */}
+            <PortfolioAuditModal
+              isOpen={auditOpen}
+              onClose={() => setAuditOpen(false)}
+            />
 
-      <ResumeModal
-        isOpen={resumeOpen}
-        onClose={() => setResumeOpen(false)}
-      />
+            <ResumeModal
+              isOpen={resumeOpen}
+              onClose={() => setResumeOpen(false)}
+            />
 
-      {/* Floating Scroll To Top Button */}
-      <ScrollToTop />
+            {/* Floating Scroll To Top Button */}
+            <ScrollToTop />
+          </>
+        )}
 
-    </div>
+      </div>
+    </PortfolioProvider>
   );
 }

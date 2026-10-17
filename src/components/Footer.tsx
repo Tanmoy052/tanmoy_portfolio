@@ -1,10 +1,23 @@
 import React from 'react';
-import { ArrowUp, Github, Linkedin, Mail, Heart, Sparkles } from 'lucide-react';
+import { ArrowUp, Github, Linkedin, Mail, Heart, Sparkles, Lock } from 'lucide-react';
 import { PERSONAL_INFO } from '../data/portfolioData';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  onOpenAdmin?: () => void;
+}
+
+export const Footer: React.FC<FooterProps> = ({ onOpenAdmin }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleAdminClick = () => {
+    if (onOpenAdmin) {
+      onOpenAdmin();
+    } else {
+      window.history.pushState({}, '', '/admin');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
   };
 
   return (
@@ -33,14 +46,25 @@ export const Footer: React.FC = () => {
             <a href="#contact" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Contact</a>
           </div>
 
-          {/* Back to top */}
-          <button
-            onClick={scrollToTop}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800 transition-colors shadow-sm"
-          >
-            <span>Back to Top</span>
-            <ArrowUp className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-          </button>
+          {/* Back to top & Admin Link */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleAdminClick}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 border border-slate-200 dark:border-slate-800 transition-colors shadow-sm"
+              title="Open Admin Panel"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              <span>Admin</span>
+            </button>
+
+            <button
+              onClick={scrollToTop}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800 transition-colors shadow-sm"
+            >
+              <span>Back to Top</span>
+              <ArrowUp className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            </button>
+          </div>
 
         </div>
 
@@ -48,7 +72,7 @@ export const Footer: React.FC = () => {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
           <p>© {new Date().getFullYear()} Tanmoy Pal. All rights reserved.</p>
           <p className="flex items-center gap-1">
-            Built with React 19, TypeScript, Express
+            Built with React 19, TypeScript, Express & MongoDB
           </p>
         </div>
 

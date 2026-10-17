@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Download, Printer, Mail, MapPin, ExternalLink, FileText, Smartphone, Layers } from 'lucide-react';
 import { PERSONAL_INFO, SKILL_CATEGORIES, TIMELINE } from '../data/portfolioData';
+import { usePortfolio } from '../context/PortfolioContext';
 
 interface ResumeModalProps {
   isOpen: boolean;
@@ -8,6 +9,7 @@ interface ResumeModalProps {
 }
 
 export const ResumeModal: React.FC<ResumeModalProps> = ({ isOpen, onClose }) => {
+  const { resume, about, skills, experiences } = usePortfolio();
   const [activeView, setActiveView] = useState<'pdf' | 'interactive'>('pdf');
   const [isMobile, setIsMobile] = useState(false);
 
@@ -34,7 +36,7 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({ isOpen, onClose }) => 
     window.print();
   };
 
-  const resumePdfUrl = "/Tanmoy_Pal_Resume.pdf";
+  const resumePdfUrl = resume?.pdfUrl || "/Tanmoy_Pal_Resume.pdf";
 
   return (
     <div id="resume-modal-backdrop" onClick={onClose} className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/75 backdrop-blur-md overflow-y-auto">

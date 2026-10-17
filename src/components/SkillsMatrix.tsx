@@ -12,8 +12,11 @@ import {
   X
 } from 'lucide-react';
 import { SKILL_CATEGORIES } from '../data/portfolioData';
+import { usePortfolio } from '../context/PortfolioContext';
 
 export const SkillsMatrix: React.FC = () => {
+  const { skills } = usePortfolio();
+  const currentSkillCategories = skills && skills.length > 0 ? skills : SKILL_CATEGORIES;
   const [selectedSkill, setSelectedSkill] = useState<{
     category: string;
     name: string;
@@ -99,7 +102,7 @@ export const SkillsMatrix: React.FC = () => {
 
         {/* 4 Cards Grid - Expanded Wide Width Side-by-Side Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 xl:gap-8 items-stretch">
-          {SKILL_CATEGORIES.map((category, idx) => {
+          {currentSkillCategories.map((category, idx) => {
             const theme = getCategoryTheme(category.id);
             const IconComponent = theme.icon;
 

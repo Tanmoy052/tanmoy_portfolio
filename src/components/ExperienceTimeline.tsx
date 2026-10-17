@@ -2,10 +2,13 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Briefcase, GraduationCap, MapPin, Calendar, Award, Server, Globe, Building2, CheckCircle2, Sparkles } from 'lucide-react';
 import { TIMELINE } from '../data/portfolioData';
+import { usePortfolio } from '../context/PortfolioContext';
 
 export const ExperienceTimeline: React.FC = () => {
-  const experienceItems = TIMELINE.filter((t) => t.type === 'Experience');
-  const educationItems = TIMELINE.filter((t) => t.type === 'Education');
+  const { experiences } = usePortfolio();
+  const currentTimeline = experiences && experiences.length > 0 ? experiences : TIMELINE;
+  const experienceItems = currentTimeline.filter((t) => t.type === 'Experience');
+  const educationItems = currentTimeline.filter((t) => t.type === 'Education');
 
   return (
     <div className="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
