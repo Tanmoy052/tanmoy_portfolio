@@ -13,8 +13,14 @@ import { PortfolioAuditModal } from './components/PortfolioAuditModal';
 import { ResumeModal } from './components/ResumeModal';
 import { ScrollToTop } from './components/ScrollToTop';
 import { PortfolioProvider } from './context/PortfolioContext';
-import { AdminPanel } from './components/admin/AdminPanel';
-import { AdminLogin } from './components/admin/AdminLogin';
+
+// Dynamic lazy imports for admin routes to optimize bundle size
+const AdminPanel = React.lazy(() =>
+  import('./components/admin/AdminPanel').then((m) => ({ default: m.AdminPanel }))
+);
+const AdminLogin = React.lazy(() =>
+  import('./components/admin/AdminLogin').then((m) => ({ default: m.AdminLogin }))
+);
 
 export default function App() {
   const [theme, setTheme] = useState<ThemeMode>('light');
@@ -127,16 +133,34 @@ export default function App() {
 
         {currentPath === '/admin/login' ? (
           /* Dedicated Admin Login Route */
-          <AdminLogin
-            onLoginSuccess={handleLoginSuccess}
-            onBackToPortfolio={navigateToPortfolio}
-          />
+          <React.Suspense
+            fallback={
+              <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">
+                <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mr-3"></div>
+                Loading Admin Portal...
+              </div>
+            }
+          >
+            <AdminLogin
+              onLoginSuccess={handleLoginSuccess}
+              onBackToPortfolio={navigateToPortfolio}
+            />
+          </React.Suspense>
         ) : currentPath === '/admin' ? (
           /* Protected Admin Dashboard Route */
-          <AdminPanel
-            onBackToPortfolio={navigateToPortfolio}
-            onLogout={handleLogout}
-          />
+          <React.Suspense
+            fallback={
+              <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">
+                <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mr-3"></div>
+                Loading Dashboard...
+              </div>
+            }
+          >
+            <AdminPanel
+              onBackToPortfolio={navigateToPortfolio}
+              onLogout={handleLogout}
+            />
+          </React.Suspense>
         ) : (
           /* Public Portfolio View */
           <>
