@@ -177,7 +177,7 @@ export const DocumentsModal: React.FC<DocumentsModalProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -193,27 +193,27 @@ export const DocumentsModal: React.FC<DocumentsModalProps> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ duration: 0.22, ease: 'easeOut' }}
-          className="relative w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden z-10 flex flex-col max-h-[90vh]"
+          className="relative w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden z-10 flex flex-col max-h-[92vh] sm:max-h-[90vh]"
         >
           {/* Header Bar */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-900/90">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-                <FolderLock className="w-5 h-5" />
+          <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-5 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-900/90">
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
+                <FolderLock className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                  <h2 className="text-base sm:text-xl font-bold text-slate-900 dark:text-white truncate">
                     Personal Documents Vault
                   </h2>
                   {documentsAuth && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                      <ShieldCheck className="w-3.5 h-3.5" />
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                      <ShieldCheck className="w-3 h-3" />
                       Unlocked
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 truncate sm:whitespace-normal">
                   {documentsAuth
                     ? 'Secure, encrypted vault for your personal certificates, academic records & credentials.'
                     : 'Protected document repository. Identity verification required.'}
@@ -221,20 +221,20 @@ export const DocumentsModal: React.FC<DocumentsModalProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               {documentsAuth && (
                 <button
                   onClick={handleLock}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 border border-slate-200 dark:border-slate-800 transition"
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 border border-slate-200 dark:border-slate-800 transition"
                   title="Lock Vault & End Session"
                 >
                   <Lock className="w-3.5 h-3.5" />
-                  <span>Lock Vault</span>
+                  <span className="hidden sm:inline">Lock Vault</span>
                 </button>
               )}
               <button
                 onClick={handleClose}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
                 title="Close and Lock Vault"
               >
                 <X className="w-5 h-5" />
@@ -243,7 +243,7 @@ export const DocumentsModal: React.FC<DocumentsModalProps> = ({
           </div>
 
           {/* Modal Body: Either Authentication Gate OR Documents List */}
-          <div className="flex-1 overflow-y-auto p-5 sm:p-7">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-7">
             {!documentsAuth ? (
               /* ======================================================== */
               /* STATE A: SECURITY VERIFICATION GATE                      */
@@ -496,7 +496,7 @@ export const DocumentsModal: React.FC<DocumentsModalProps> = ({
                         </div>
 
                         {/* Card Actions & Timestamp */}
-                        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-900 flex items-center justify-between">
+                        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-900 flex flex-wrap items-center justify-between gap-2">
                           <span className="text-[11px] text-slate-400">
                             Uploaded {formatDate(doc.createdAt)}
                           </span>
@@ -505,7 +505,7 @@ export const DocumentsModal: React.FC<DocumentsModalProps> = ({
                             {/* View / Preview PDF */}
                             <button
                               onClick={() => setPreviewDoc(doc)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer"
                               title="Preview PDF"
                             >
                               <Eye className="w-3.5 h-3.5 text-blue-500" />
@@ -516,7 +516,7 @@ export const DocumentsModal: React.FC<DocumentsModalProps> = ({
                             <a
                               href={`/api/documents/download/${doc._id}`}
                               download
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 shadow-sm transition"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 shadow-sm transition cursor-pointer"
                               title="Download PDF"
                             >
                               <Download className="w-3.5 h-3.5" />
@@ -559,26 +559,26 @@ export const DocumentsModal: React.FC<DocumentsModalProps> = ({
               }`}
             >
               {/* Preview Bar */}
-              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800 bg-slate-950">
-                <div className="flex items-center gap-2.5 truncate">
+              <div className="flex items-center justify-between px-3.5 sm:px-5 py-2.5 sm:py-3 border-b border-slate-800 bg-slate-950 gap-2">
+                <div className="flex items-center gap-2 truncate min-w-0">
                   <FileText className="w-4 h-4 text-red-500 shrink-0" />
-                  <span className="text-sm font-bold text-white truncate">
+                  <span className="text-xs sm:text-sm font-bold text-white truncate">
                     {previewDoc.title}
                   </span>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
+                  <span className="hidden sm:inline text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
                     PDF
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                   <a
                     href={`/api/documents/download/${previewDoc._id}`}
                     download
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition"
+                    className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition cursor-pointer"
                     title="Download PDF"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    <span>Download</span>
+                    <span className="hidden sm:inline">Download</span>
                   </a>
 
                   <a
@@ -593,7 +593,7 @@ export const DocumentsModal: React.FC<DocumentsModalProps> = ({
 
                   <button
                     onClick={() => setIsPreviewFullscreen(!isPreviewFullscreen)}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                    className="hidden sm:inline-flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
                     title={isPreviewFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
                   >
                     {isPreviewFullscreen ? (
@@ -605,7 +605,7 @@ export const DocumentsModal: React.FC<DocumentsModalProps> = ({
 
                   <button
                     onClick={() => setPreviewDoc(null)}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
                     title="Close Preview"
                   >
                     <X className="w-4 h-4" />

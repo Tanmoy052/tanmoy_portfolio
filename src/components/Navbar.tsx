@@ -86,8 +86,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAdmin, onOpenDocuments }) 
           Tanmoy
         </a>
 
-        {/* Navigation Links on the Right */}
-        <nav className="hidden md:flex items-center gap-5 lg:gap-8 xl:gap-10">
+        {/* Navigation Links on the Right (Laptops & Desktops) */}
+        <nav className="hidden lg:flex items-center gap-4 xl:gap-7 2xl:gap-9">
           {navLinks.map((link) => {
             const isActive = activeNav === link.id;
             return (
@@ -98,7 +98,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAdmin, onOpenDocuments }) 
                   e.preventDefault();
                   handleNavClick(link.id);
                 }}
-                className={`text-sm sm:text-base font-normal transition-colors duration-200 relative py-1 ${
+                className={`text-sm xl:text-base font-normal transition-colors duration-200 relative py-1 ${
                   isActive
                     ? 'text-slate-900 dark:text-white font-medium'
                     : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
@@ -118,7 +118,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAdmin, onOpenDocuments }) 
           })}
           <button
             onClick={onOpenAdmin || (() => { window.history.pushState({}, '', '/admin'); window.dispatchEvent(new PopStateEvent('popstate')); })}
-            className="p-2 text-slate-500 hover:text-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition"
+            className="p-2 text-slate-500 hover:text-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition cursor-pointer"
             title="Admin Console"
           >
             <Lock className="w-4 h-4" />
@@ -127,7 +127,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAdmin, onOpenDocuments }) 
           {/* Red Area: Personal Documents Section Button */}
           <button
             onClick={onOpenDocuments}
-            className="group flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-600 text-white shadow-sm hover:shadow-md hover:shadow-blue-500/25 active:scale-95 transition-all duration-200 cursor-pointer border border-blue-400/30"
+            className="group flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs xl:text-sm font-semibold bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-600 text-white shadow-sm hover:shadow-md hover:shadow-blue-500/25 active:scale-95 transition-all duration-200 cursor-pointer border border-blue-400/30"
             title="Personal Documents Vault (Secure PDF Downloads)"
           >
             <FileText className="w-4 h-4 text-blue-100 group-hover:text-white transition" />
@@ -135,19 +135,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAdmin, onOpenDocuments }) 
           </button>
         </nav>
 
-        {/* Mobile View Toggle & Quick Documents Trigger */}
-        <div className="md:hidden flex items-center gap-2">
+        {/* Mobile & Tablet View Toggle & Quick Documents Trigger */}
+        <div className="lg:hidden flex items-center gap-2 sm:gap-3">
           <button
             onClick={onOpenDocuments}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white shadow-sm"
-            title="Personal Documents"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-sm transition active:scale-95 cursor-pointer"
+            title="Personal Documents Vault"
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>Docs</span>
+            <span className="hidden sm:inline">Documents</span>
+            <span className="sm:hidden">Docs</span>
           </button>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-lg bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800"
+            className="p-2 rounded-lg bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 cursor-pointer active:scale-95 transition"
             aria-label="Toggle Navigation"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -156,13 +157,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAdmin, onOpenDocuments }) 
 
       </div>
 
-      {/* Mobile Menu Drawer */}
+      {/* Mobile & Tablet Menu Drawer */}
       {mobileMenuOpen && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
-          className="md:hidden bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 px-6 py-4 space-y-2 shadow-lg"
+          className="lg:hidden bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 px-6 py-4 space-y-2 shadow-lg"
         >
           {navLinks.map((link) => (
             <a

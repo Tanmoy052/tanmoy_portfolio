@@ -456,15 +456,15 @@ async function startServer() {
 
         const fileUrl = `/documents/${req.file.filename}`;
 
-        // Sync to dist/documents if dist directory exists
+        // Asynchronously sync to dist/documents in background if dist directory exists
         const distDocumentsDir = path.join(process.cwd(), "dist", "documents");
         if (fs.existsSync(path.join(process.cwd(), "dist"))) {
-          if (!fs.existsSync(distDocumentsDir)) fs.mkdirSync(distDocumentsDir, { recursive: true });
-          try {
-            fs.copyFileSync(req.file.path, path.join(distDocumentsDir, req.file.filename));
-          } catch (e) {
-            console.warn("Could not copy document to dist/documents:", e);
+          if (!fs.existsSync(distDocumentsDir)) {
+            fs.mkdirSync(distDocumentsDir, { recursive: true });
           }
+          fs.promises.copyFile(req.file.path, path.join(distDocumentsDir, req.file.filename)).catch((e) => {
+            console.warn("Could not copy document to dist/documents:", e);
+          });
         }
 
         const newDoc = await PersonalDocument.create({
@@ -489,7 +489,7 @@ async function startServer() {
     });
   });
 
-  // 4. DELETE Personal Document
+  // 4. DELETE Personal Document (High-Performance Single-Query Deletion)
   app.delete("/api/admin/documents/:id", async (req, res) => {
     try {
       const { id } = req.params;
@@ -497,31 +497,21 @@ async function startServer() {
         return res.status(400).json({ error: "Invalid document ID." });
       }
 
-      const doc = await PersonalDocument.findById(id);
+      // Atomic single-query find and delete from MongoDB Atlas
+      const doc = await PersonalDocument.findByIdAndDelete(id);
       if (!doc) {
         return res.status(404).json({ error: "Document not found in vault." });
       }
 
-      // Delete physical file safely
+      // Asynchronously delete physical files without stalling the HTTP response
       const safeFileName = path.basename(doc.fileName);
       const filePath = path.join(documentsUploadDir, safeFileName);
-      if (fs.existsSync(filePath)) {
-        try {
-          fs.unlinkSync(filePath);
-        } catch (e) {
-          console.warn("Could not unlink document file:", e);
-        }
-      }
-
-      // Delete from dist/documents if exists
       const distFilePath = path.join(process.cwd(), "dist", "documents", safeFileName);
-      if (fs.existsSync(distFilePath)) {
-        try {
-          fs.unlinkSync(distFilePath);
-        } catch (e) {}
-      }
 
-      await PersonalDocument.findByIdAndDelete(id);
+      Promise.allSettled([
+        fs.promises.unlink(filePath).catch(() => {}),
+        fs.promises.unlink(distFilePath).catch(() => {})
+      ]).catch(() => {});
 
       res.json({ success: true, message: "Document removed from vault successfully." });
     } catch (err: any) {

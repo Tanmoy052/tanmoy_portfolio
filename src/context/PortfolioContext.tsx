@@ -301,7 +301,10 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       });
       const json = await res.json();
       if (res.ok && json.success) {
-        await refreshDocuments();
+        if (json.data) {
+          // Instant state update with newly created document
+          setDocuments((prev) => [json.data, ...prev.filter((d) => d._id !== json.data._id)]);
+        }
         setLastSaved(new Date().toLocaleTimeString());
         return { success: true, data: json.data };
       }
@@ -312,6 +315,10 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const deleteDocumentFile = async (id: string): Promise<boolean> => {
+    const previousDocuments = documents;
+    // Optimistic UI update: instantly disappears from the UI
+    setDocuments((prev) => prev.filter((d) => d._id !== id));
+
     try {
       const res = await fetch(`/api/admin/documents/${id}`, {
         method: 'DELETE',
@@ -319,14 +326,17 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (res.ok) {
         const json = await res.json();
         if (json.success) {
-          setDocuments((prev) => prev.filter((d) => d._id !== id));
           setLastSaved(new Date().toLocaleTimeString());
           return true;
         }
       }
+      // Rollback to previous documents if server failed
+      setDocuments(previousDocuments);
       return false;
     } catch (err) {
       console.error('Failed to delete document:', err);
+      // Rollback on network failure
+      setDocuments(previousDocuments);
       return false;
     }
   };

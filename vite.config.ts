@@ -26,7 +26,10 @@ export default defineConfig(() => {
       // Do not modify—file watching is disabled to prevent flickering during agent edits.
       hmr: disableHmr ? false : { port: hmrPort },
       // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
-      watch: disableHmr ? null : {},
+      // Ignore documents and projects upload directories to prevent dev-server HMR rebuild lag during uploads
+      watch: disableHmr ? null : {
+        ignored: ['**/dist/**', '**/public/documents/**', '**/public/projects/**'],
+      },
     },
     build: {
       chunkSizeWarningLimit: 1200,
