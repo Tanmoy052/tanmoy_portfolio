@@ -5,7 +5,8 @@ import {
   SkillCategory,
   Project,
   TimelineItem,
-  PortfolioData
+  PortfolioData,
+  PersonalDocument
 } from '../types';
 import {
   PERSONAL_INFO as DEFAULT_PERSONAL_INFO,
@@ -41,7 +42,15 @@ interface PortfolioContextType {
   refreshContacts: () => Promise<void>;
   deleteContact: (id: string) => Promise<boolean>;
   fetchAdminUser: () => Promise<void>;
-  updateAdminCredentials: (payload: { currentPassword: string; newUsername?: string; newPassword?: string }) => Promise<{ success: boolean; message?: string; error?: string; username?: string }>;
+  updateAdminCredentials: (payload: { currentPassword: string; newUsername?: string; newPassword?: string; newEmail?: string }) => Promise<{ success: boolean; message?: string; error?: string; username?: string }>;
+  documents: PersonalDocument[];
+  documentsAuth: boolean;
+  documentsLoading: boolean;
+  verifyDocumentsAuth: (identifier: string, pass: string) => Promise<{ success: boolean; error?: string }>;
+  logoutDocuments: () => void;
+  refreshDocuments: () => Promise<void>;
+  uploadDocumentFile: (formData: FormData) => Promise<{ success: boolean; data?: PersonalDocument; error?: string }>;
+  deleteDocumentFile: (id: string) => Promise<boolean>;
 }
 
 const defaultResume: ResumeData = {
@@ -59,6 +68,14 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [projects, setProjects] = useState<Project[]>(DEFAULT_PROJECTS);
   const [experiences, setExperiences] = useState<TimelineItem[]>(DEFAULT_TIMELINE);
   const [contacts, setContacts] = useState<ContactMessage[]>([]);
+  const [documents, setDocuments] = useState<PersonalDocument[]>([]);
+  const [documentsAuth, setDocumentsAuth] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('documents_auth') === 'true';
+    }
+    return false;
+  });
+  const [documentsLoading, setDocumentsLoading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [dbStatus, setDbStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
   const [lastSaved, setLastSaved] = useState<string | null>(null);
@@ -227,10 +244,98 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
+  const refreshDocuments = async () => {
+    try {
+      setDocumentsLoading(true);
+      const res = await fetch('/api/documents');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          setDocuments(json.data);
+        }
+      }
+    } catch (err) {
+      console.warn('Could not fetch documents:', err);
+    } finally {
+      setDocumentsLoading(false);
+    }
+  };
+
+  const verifyDocumentsAuth = async (
+    identifier: string,
+    pass: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const res = await fetch('/api/documents/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier, password: pass }),
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        sessionStorage.setItem('documents_auth', 'true');
+        if (json.token) sessionStorage.setItem('documents_token', json.token);
+        setDocumentsAuth(true);
+        await refreshDocuments();
+        return { success: true };
+      }
+      return { success: false, error: json.error || 'Invalid credentials' };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Verification failed. Please check network connection.' };
+    }
+  };
+
+  const logoutDocuments = () => {
+    sessionStorage.removeItem('documents_auth');
+    sessionStorage.removeItem('documents_token');
+    setDocumentsAuth(false);
+  };
+
+  const uploadDocumentFile = async (
+    formData: FormData
+  ): Promise<{ success: boolean; data?: PersonalDocument; error?: string }> => {
+    try {
+      const res = await fetch('/api/admin/documents', {
+        method: 'POST',
+        body: formData,
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        await refreshDocuments();
+        setLastSaved(new Date().toLocaleTimeString());
+        return { success: true, data: json.data };
+      }
+      return { success: false, error: json.error || 'Upload failed' };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network error uploading document' };
+    }
+  };
+
+  const deleteDocumentFile = async (id: string): Promise<boolean> => {
+    try {
+      const res = await fetch(`/api/admin/documents/${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          setDocuments((prev) => prev.filter((d) => d._id !== id));
+          setLastSaved(new Date().toLocaleTimeString());
+          return true;
+        }
+      }
+      return false;
+    } catch (err) {
+      console.error('Failed to delete document:', err);
+      return false;
+    }
+  };
+
   useEffect(() => {
     refreshPortfolio();
     refreshContacts();
     fetchAdminUser();
+    refreshDocuments();
   }, []);
 
   return (
@@ -243,6 +348,9 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         experiences,
         contacts,
         adminUsername,
+        documents,
+        documentsAuth,
+        documentsLoading,
         loading,
         dbStatus,
         lastSaved,
@@ -254,6 +362,11 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         deleteContact,
         fetchAdminUser,
         updateAdminCredentials,
+        verifyDocumentsAuth,
+        logoutDocuments,
+        refreshDocuments,
+        uploadDocumentFile,
+        deleteDocumentFile,
       }}
     >
       {children}

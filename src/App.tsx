@@ -11,6 +11,7 @@ import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 import { PortfolioAuditModal } from './components/PortfolioAuditModal';
 import { ResumeModal } from './components/ResumeModal';
+import { DocumentsModal } from './components/DocumentsModal';
 import { ScrollToTop } from './components/ScrollToTop';
 import { PortfolioProvider } from './context/PortfolioContext';
 
@@ -27,12 +28,16 @@ export default function App() {
   const [accent, setAccent] = useState<AccentColor>('emerald');
   const [auditOpen, setAuditOpen] = useState(false);
   const [resumeOpen, setResumeOpen] = useState(false);
+  const [documentsOpen, setDocumentsOpen] = useState(false);
 
   // Path & Hash based routing for /admin and /admin/login
   const [currentPath, setCurrentPath] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       const p = window.location.pathname;
       const h = window.location.hash;
+      if (p === '/documents' || h === '#documents') {
+        setTimeout(() => setDocumentsOpen(true), 50);
+      }
       if (p === '/admin/login' || h === '#admin/login' || h === '#login') return '/admin/login';
       if (p === '/admin' || p.startsWith('/admin') || h === '#admin') return '/admin';
     }
@@ -43,6 +48,9 @@ export default function App() {
     const handleLocationChange = () => {
       const p = window.location.pathname;
       const h = window.location.hash;
+      if (p === '/documents' || h === '#documents') {
+        setDocumentsOpen(true);
+      }
       if (p === '/admin/login' || h === '#admin/login' || h === '#login') {
         setCurrentPath('/admin/login');
       } else if (p === '/admin' || p.startsWith('/admin') || h === '#admin') {
@@ -98,7 +106,7 @@ export default function App() {
 
   // Handle ESC key to close active modals & lock body scroll when modal is open
   useEffect(() => {
-    const isAnyModalOpen = auditOpen || resumeOpen;
+    const isAnyModalOpen = auditOpen || resumeOpen || documentsOpen;
     if (isAnyModalOpen) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -109,6 +117,7 @@ export default function App() {
       if (e.key === 'Escape') {
         setAuditOpen(false);
         setResumeOpen(false);
+        setDocumentsOpen(false);
       }
     };
 
@@ -172,6 +181,7 @@ export default function App() {
               setAccent={setAccent}
               onOpenAudit={() => setAuditOpen(true)}
               onOpenResume={() => setResumeOpen(true)}
+              onOpenDocuments={() => setDocumentsOpen(true)}
               onOpenTerminal={scrollToAbout}
               onOpenAdmin={navigateToAdmin}
             />
@@ -203,6 +213,13 @@ export default function App() {
             <ResumeModal
               isOpen={resumeOpen}
               onClose={() => setResumeOpen(false)}
+            />
+
+            {/* Personal Documents Vault Modal */}
+            <DocumentsModal
+              isOpen={documentsOpen}
+              onClose={() => setDocumentsOpen(false)}
+              onOpenAdmin={navigateToAdmin}
             />
 
             {/* Floating Scroll To Top Button */}

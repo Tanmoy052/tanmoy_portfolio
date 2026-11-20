@@ -17,6 +17,10 @@ const projectsUploadDir = path.join(publicDir, "projects");
 if (!fs.existsSync(projectsUploadDir)) {
   fs.mkdirSync(projectsUploadDir, { recursive: true });
 }
+const documentsUploadDir = path.join(publicDir, "documents");
+if (!fs.existsSync(documentsUploadDir)) {
+  fs.mkdirSync(documentsUploadDir, { recursive: true });
+}
 
 // Multer storage for Resume PDF
 const resumeStorage = multer.diskStorage({
@@ -35,6 +39,29 @@ const uploadResume = multer({
       cb(null, true);
     } else {
       cb(new Error("Only PDF files are allowed for resume upload."));
+    }
+  },
+});
+
+// Multer storage for Personal Documents (PDF only)
+const documentStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, documentsUploadDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const base = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, "_");
+    cb(null, `doc_${base}_${Date.now()}${ext}`);
+  },
+});
+const uploadDocument = multer({
+  storage: documentStorage,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "application/pdf" || file.originalname.toLowerCase().endsWith(".pdf")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF files are allowed for document upload."));
     }
   },
 });
@@ -88,10 +115,25 @@ const Portfolio: mongoose.Model<any> = mongoose.models.Portfolio || mongoose.mod
 const adminAccountSchema = new mongoose.Schema({
   key: { type: String, default: "primary", unique: true },
   username: { type: String, required: true, default: "tanmoypal30102004" },
+  email: { type: String, default: "tanmoypal30102004@gmail.com" },
   password: { type: String, required: true, default: "tanmoy12345" },
   updatedAt: { type: Date, default: Date.now },
 });
 const AdminAccount: mongoose.Model<any> = mongoose.models.AdminAccount || mongoose.model("AdminAccount", adminAccountSchema);
+
+// Mongoose Personal Document Schema & Model for PDF Documents
+const personalDocumentSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  category: { type: String, default: "General" },
+  description: { type: String, default: "" },
+  fileName: { type: String, required: true },
+  originalName: { type: String, required: true },
+  fileUrl: { type: String, required: true },
+  fileSize: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
+const PersonalDocument: mongoose.Model<any> = mongoose.models.PersonalDocument || mongoose.model("PersonalDocument", personalDocumentSchema);
 
 async function findAvailablePort(startPort: number, hosts: string[]) {
   for (let port = startPort; port < startPort + 50; port++) {
@@ -166,9 +208,28 @@ async function connectDB() {
       await AdminAccount.create({
         key: "primary",
         username: process.env.ADMIN_USERNAME || "tanmoypal30102004",
+        email: process.env.ADMIN_EMAIL || "tanmoypal30102004@gmail.com",
         password: process.env.ADMIN_PASSWORD || "tanmoy12345",
       });
       console.log("Seeded initial Admin Account into MongoDB.");
+    } else if (!existingAdmin.email) {
+      existingAdmin.email = process.env.ADMIN_EMAIL || "tanmoypal30102004@gmail.com";
+      await existingAdmin.save();
+    }
+
+    // Seed initial personal document if not exists
+    const docCount = await PersonalDocument.countDocuments();
+    if (docCount === 0) {
+      await PersonalDocument.create({
+        title: "Tanmoy Pal - Professional Resume & Technical Credentials",
+        category: "Certifications & Resume",
+        description: "Official verified developer resume, skillset index, and contact credentials in high-resolution PDF format.",
+        fileName: "Tanmoy_Pal_Resume.pdf",
+        originalName: "Tanmoy_Pal_Resume.pdf",
+        fileUrl: "/Tanmoy_Pal_Resume.pdf",
+        fileSize: 278421,
+      });
+      console.log("Seeded initial document into 'personaldocuments' collection.");
     }
   } catch (error) {
     console.error("MongoDB connection failure:", error);
@@ -194,6 +255,7 @@ async function startServer() {
   // Static uploads serving
   app.use("/public", express.static(publicDir));
   app.use("/projects", express.static(projectsUploadDir));
+  app.use("/documents", express.static(documentsUploadDir));
 
   app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
@@ -212,32 +274,47 @@ async function startServer() {
     });
   });
 
-  // Admin Login Endpoint (Verifies against MongoDB AdminAccount)
+  // Admin Login Endpoint (Verifies against MongoDB AdminAccount by Username or Email)
   app.post("/api/admin/login", async (req, res) => {
     try {
       const { username, password } = req.body;
       const adminRecord = await AdminAccount.findOne({ key: "primary" });
       const expectedUser = adminRecord?.username || process.env.ADMIN_USERNAME || "tanmoypal30102004";
       const expectedPass = adminRecord?.password || process.env.ADMIN_PASSWORD || "tanmoy12345";
+      const expectedEmail = adminRecord?.email || process.env.ADMIN_EMAIL || "tanmoypal30102004@gmail.com";
 
-      if (password === expectedPass && (!username || username.trim().toLowerCase() === expectedUser.trim().toLowerCase())) {
-        return res.json({ success: true, token: "admin-session-" + Date.now(), user: expectedUser, username: expectedUser });
+      const cleanIdentifier = String(username || "").trim().toLowerCase();
+      const isIdentifierMatch =
+        !username ||
+        cleanIdentifier === expectedUser.toLowerCase() ||
+        cleanIdentifier === expectedEmail.toLowerCase();
+
+      if (password === expectedPass && isIdentifierMatch) {
+        return res.json({
+          success: true,
+          token: "admin-session-" + Date.now(),
+          user: expectedUser,
+          username: expectedUser,
+          email: expectedEmail,
+        });
       }
-      return res.status(401).json({ error: "Invalid username or password. Please verify your credentials." });
+      return res.status(401).json({ error: "Invalid username/email or password. Please verify your credentials." });
     } catch (err: any) {
       console.error("Login verification error:", err);
       res.status(500).json({ error: "Login failed due to an internal server error." });
     }
   });
 
-  // GET Current Admin Profile (Username only, never password)
+  // GET Current Admin Profile (Username & Email, never password)
   app.get("/api/admin/user", async (req, res) => {
     try {
       const adminRecord = await AdminAccount.findOne({ key: "primary" });
       const currentUsername = adminRecord?.username || process.env.ADMIN_USERNAME || "tanmoypal30102004";
+      const currentEmail = adminRecord?.email || process.env.ADMIN_EMAIL || "tanmoypal30102004@gmail.com";
       res.json({
         success: true,
         username: currentUsername,
+        email: currentEmail,
         updatedAt: adminRecord?.updatedAt || new Date().toISOString(),
       });
     } catch (err: any) {
@@ -245,10 +322,10 @@ async function startServer() {
     }
   });
 
-  // PUT Update Admin Username & Password
+  // PUT Update Admin Credentials (Username, Email, and/or Password)
   app.put("/api/admin/user", async (req, res) => {
     try {
-      const { currentPassword, newUsername, newPassword } = req.body;
+      const { currentPassword, newUsername, newEmail, newPassword } = req.body;
       if (!currentPassword) {
         return res.status(400).json({ error: "Current password is required to authorize account changes." });
       }
@@ -260,8 +337,8 @@ async function startServer() {
         return res.status(401).json({ error: "Current password does not match. Please verify and try again." });
       }
 
-      if ((!newUsername || !newUsername.trim()) && (!newPassword || !newPassword.trim())) {
-        return res.status(400).json({ error: "Please enter a new username or new password to update." });
+      if ((!newUsername || !newUsername.trim()) && (!newEmail || !newEmail.trim()) && (!newPassword || !newPassword.trim())) {
+        return res.status(400).json({ error: "Please enter a new username, email, or password to update." });
       }
 
       const updateFields: any = { updatedAt: new Date() };
@@ -272,6 +349,14 @@ async function startServer() {
           return res.status(400).json({ error: "Username must be at least 3 characters long." });
         }
         updateFields.username = cleanUser;
+      }
+
+      if (newEmail && newEmail.trim()) {
+        const cleanEmail = newEmail.trim().toLowerCase();
+        if (!cleanEmail.includes("@") || !cleanEmail.includes(".")) {
+          return res.status(400).json({ error: "Please provide a valid email address." });
+        }
+        updateFields.email = cleanEmail;
       }
 
       if (newPassword && newPassword.trim()) {
@@ -290,13 +375,191 @@ async function startServer() {
 
       res.json({
         success: true,
-        message: "Admin credentials successfully updated in MongoDB Atlas.",
+        message: "Admin credentials successfully updated in MongoDB Atlas. Documents vault access updated as well.",
         username: updated.username,
+        email: updated.email,
         updatedAt: updated.updatedAt,
       });
     } catch (err: any) {
       console.error("Error updating admin user:", err);
       res.status(500).json({ error: "Failed to update admin credentials." });
+    }
+  });
+
+  // ==========================================
+  // PERSONAL DOCUMENTS VAULT API ENDPOINTS
+  // ==========================================
+
+  // 1. Documents Auth Verification (uses Admin Account credentials)
+  app.post("/api/documents/auth", async (req, res) => {
+    try {
+      const { identifier, password } = req.body;
+      if (!identifier || !password) {
+        return res.status(400).json({ error: "Email/username and password are required." });
+      }
+
+      const adminRecord = await AdminAccount.findOne({ key: "primary" });
+      const expectedUser = adminRecord?.username || process.env.ADMIN_USERNAME || "tanmoypal30102004";
+      const expectedPass = adminRecord?.password || process.env.ADMIN_PASSWORD || "tanmoy12345";
+      const expectedEmail = adminRecord?.email || process.env.ADMIN_EMAIL || "tanmoypal30102004@gmail.com";
+
+      const cleanId = String(identifier).trim().toLowerCase();
+      const isIdentifierMatch = cleanId === expectedUser.toLowerCase() || cleanId === expectedEmail.toLowerCase();
+      const isPasswordMatch = password === expectedPass;
+
+      if (isIdentifierMatch && isPasswordMatch) {
+        return res.json({
+          success: true,
+          token: "doc-vault-" + Date.now(),
+          user: expectedUser,
+          email: expectedEmail,
+          message: "Documents Vault unlocked successfully.",
+        });
+      }
+
+      return res.status(401).json({
+        error: "Invalid credentials. Please enter your valid admin email/username and password to access documents.",
+      });
+    } catch (err: any) {
+      console.error("Documents verification error:", err);
+      res.status(500).json({ error: "Verification failed due to an internal server error." });
+    }
+  });
+
+  // 2. GET All Personal Documents
+  app.get("/api/documents", async (req, res) => {
+    try {
+      const docs = await PersonalDocument.find().sort({ createdAt: -1 });
+      res.json({ success: true, data: docs });
+    } catch (err: any) {
+      console.error("Failed to fetch documents:", err);
+      res.status(500).json({ error: "Failed to retrieve documents." });
+    }
+  });
+
+  // 3. POST Upload New Document (PDF)
+  app.post("/api/admin/documents", (req, res) => {
+    uploadDocument.single("file")(req, res, async (err: any) => {
+      if (err) {
+        return res.status(400).json({ error: err.message || "Only PDF files are supported for document upload." });
+      }
+
+      try {
+        if (!req.file) {
+          return res.status(400).json({ error: "No PDF file uploaded. Only PDF files are supported." });
+        }
+
+        const { title, category, description } = req.body;
+        if (!title || !title.trim()) {
+          return res.status(400).json({ error: "Document title is required." });
+        }
+
+        const fileUrl = `/documents/${req.file.filename}`;
+
+        // Sync to dist/documents if dist directory exists
+        const distDocumentsDir = path.join(process.cwd(), "dist", "documents");
+        if (fs.existsSync(path.join(process.cwd(), "dist"))) {
+          if (!fs.existsSync(distDocumentsDir)) fs.mkdirSync(distDocumentsDir, { recursive: true });
+          try {
+            fs.copyFileSync(req.file.path, path.join(distDocumentsDir, req.file.filename));
+          } catch (e) {
+            console.warn("Could not copy document to dist/documents:", e);
+          }
+        }
+
+        const newDoc = await PersonalDocument.create({
+          title: title.trim(),
+          category: category?.trim() || "General",
+          description: description?.trim() || "",
+          fileName: req.file.filename,
+          originalName: req.file.originalname,
+          fileUrl,
+          fileSize: req.file.size || 0,
+        });
+
+        res.status(201).json({
+          success: true,
+          message: "Document successfully added to personal vault.",
+          data: newDoc,
+        });
+      } catch (uploadErr: any) {
+        console.error("Document upload error:", uploadErr);
+        res.status(500).json({ error: uploadErr.message || "Failed to upload document." });
+      }
+    });
+  });
+
+  // 4. DELETE Personal Document
+  app.delete("/api/admin/documents/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: "Invalid document ID." });
+      }
+
+      const doc = await PersonalDocument.findById(id);
+      if (!doc) {
+        return res.status(404).json({ error: "Document not found in vault." });
+      }
+
+      // Delete physical file safely
+      const safeFileName = path.basename(doc.fileName);
+      const filePath = path.join(documentsUploadDir, safeFileName);
+      if (fs.existsSync(filePath)) {
+        try {
+          fs.unlinkSync(filePath);
+        } catch (e) {
+          console.warn("Could not unlink document file:", e);
+        }
+      }
+
+      // Delete from dist/documents if exists
+      const distFilePath = path.join(process.cwd(), "dist", "documents", safeFileName);
+      if (fs.existsSync(distFilePath)) {
+        try {
+          fs.unlinkSync(distFilePath);
+        } catch (e) {}
+      }
+
+      await PersonalDocument.findByIdAndDelete(id);
+
+      res.json({ success: true, message: "Document removed from vault successfully." });
+    } catch (err: any) {
+      console.error("Error deleting document:", err);
+      res.status(500).json({ error: "Failed to delete document." });
+    }
+  });
+
+  // 5. GET Download Personal Document (Forces browser attachment download)
+  app.get("/api/documents/download/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: "Invalid document ID." });
+      }
+
+      const doc = await PersonalDocument.findById(id);
+      if (!doc) {
+        return res.status(404).json({ error: "Document not found." });
+      }
+
+      const safeFileName = path.basename(doc.fileName);
+      let filePath = path.join(documentsUploadDir, safeFileName);
+      if (!fs.existsSync(filePath)) {
+        // Fallback to publicDir if it was a seeded file like Tanmoy_Pal_Resume.pdf
+        const altPath = path.join(publicDir, safeFileName);
+        if (fs.existsSync(altPath)) {
+          filePath = altPath;
+        } else {
+          return res.status(404).json({ error: "Document file not found on server." });
+        }
+      }
+
+      const safeDownloadName = (doc.originalName || `${doc.title}.pdf`).replace(/[^a-zA-Z0-9_.-]/g, "_");
+      res.download(filePath, safeDownloadName);
+    } catch (err: any) {
+      console.error("Document download error:", err);
+      res.status(500).json({ error: "Failed to download document." });
     }
   });
 

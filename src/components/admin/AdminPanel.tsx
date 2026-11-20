@@ -70,6 +70,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToPortfolio, onLog
     experiences,
     contacts,
     adminUsername,
+    documents,
     dbStatus,
     lastSaved,
     updatePortfolioData,
@@ -79,6 +80,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToPortfolio, onLog
     refreshContacts,
     deleteContact,
     updateAdminCredentials,
+    uploadDocumentFile,
+    deleteDocumentFile,
+    refreshDocuments,
   } = usePortfolio();
 
   // Authentication State
@@ -87,7 +91,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToPortfolio, onLog
   });
 
   // Active Tab
-  type TabType = 'resume' | 'about' | 'skills' | 'projects' | 'experiences' | 'contacts' | 'account';
+  type TabType = 'resume' | 'about' | 'skills' | 'projects' | 'experiences' | 'documents' | 'contacts' | 'account';
   const [activeTab, setActiveTab] = useState<TabType>('resume');
 
   // Local Form States
@@ -123,6 +127,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToPortfolio, onLog
   const [skillSearch, setSkillSearch] = useState('');
   const [contactSearch, setContactSearch] = useState('');
   const [previewPdfExpanded, setPreviewPdfExpanded] = useState(true);
+
+  // Personal Documents States
+  const [docTitle, setDocTitle] = useState('');
+  const [docCategory, setDocCategory] = useState('Academic');
+  const [docDescription, setDocDescription] = useState('');
+  const [docFile, setDocFile] = useState<File | null>(null);
+  const [docUploading, setDocUploading] = useState(false);
+  const [docSearch, setDocSearch] = useState('');
+  const [docCategoryFilter, setDocCategoryFilter] = useState('All');
+  const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
+  const docFileInputRef = useRef<HTMLInputElement>(null);
 
   // Project Editor Modal State
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -182,6 +197,50 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToPortfolio, onLog
       setLocalProjects(projects);
       setLocalExperiences(experiences);
       showToast('Unsaved changes discarded.', 'info');
+    }
+  };
+
+  const handleUploadDocument = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!docTitle.trim()) {
+      showToast('Please enter a document title.', 'error');
+      return;
+    }
+    if (!docFile) {
+      showToast('Please select a PDF document file to upload.', 'error');
+      return;
+    }
+
+    setDocUploading(true);
+    const formData = new FormData();
+    formData.append('title', docTitle.trim());
+    formData.append('category', docCategory);
+    formData.append('description', docDescription.trim());
+    formData.append('file', docFile);
+
+    const res = await uploadDocumentFile(formData);
+    setDocUploading(false);
+
+    if (res.success) {
+      showToast(`Document "${docTitle}" added to vault!`, 'success');
+      setDocTitle('');
+      setDocDescription('');
+      setDocFile(null);
+      if (docFileInputRef.current) docFileInputRef.current.value = '';
+    } else {
+      showToast(res.error || 'Failed to upload document', 'error');
+    }
+  };
+
+  const handleDeleteDocument = async (id: string, title: string) => {
+    if (!window.confirm(`Are you sure you want to delete "${title}"? This cannot be undone.`)) return;
+    setDeletingDocId(id);
+    const success = await deleteDocumentFile(id);
+    setDeletingDocId(null);
+    if (success) {
+      showToast(`Document "${title}" removed from vault.`, 'success');
+    } else {
+      showToast('Failed to delete document.', 'error');
     }
   };
 
@@ -710,6 +769,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToPortfolio, onLog
                   {contacts.length}
                 </span>
               )}
+            </button>
+
+            <div className="hidden md:block my-2 border-t border-slate-800" />
+            <div className="hidden md:block px-3 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+              Documents Vault
+            </div>
+
+            <button
+              onClick={() => setActiveTab('documents')}
+              className={`flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition whitespace-nowrap ${
+                activeTab === 'documents'
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/20'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              <span className="flex items-center gap-3">
+                <FileText className="w-4 h-4 text-emerald-400" />
+                <span>Personal Documents</span>
+              </span>
+              <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-800 text-emerald-400 border border-emerald-500/30">
+                {documents.length}
+              </span>
             </button>
 
             <div className="hidden md:block my-2 border-t border-slate-800" />
@@ -2211,6 +2292,280 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToPortfolio, onLog
                       ))}
                   </div>
                 )}
+              </motion.div>
+            )}
+
+            {/* ======================= TAB: PERSONAL DOCUMENTS ======================= */}
+            {activeTab === 'documents' && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-6 max-w-5xl"
+              >
+                {/* Header */}
+                <div className="border-b border-slate-800/80 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2.5">
+                      <FileText className="w-5 h-5 text-emerald-400" />
+                      Personal Documents Vault Manager
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Upload and manage your personal documents (PDF format). These are protected and accessible from the website's Documents section with secure verification.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      {documents.length} Document{documents.length === 1 ? '' : 's'} in Vault
+                    </span>
+                  </div>
+                </div>
+
+                {/* Upload Form Card */}
+                <div className="p-6 rounded-3xl bg-slate-900/60 border border-slate-800/80 shadow-xl space-y-5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <Upload className="w-4 h-4 text-emerald-400" />
+                      Upload New Document (PDF)
+                    </h3>
+                    <span className="text-[11px] text-slate-400">PDF Files Only • Max 50MB</span>
+                  </div>
+
+                  <form onSubmit={handleUploadDocument} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                          Document Title *
+                        </label>
+                        <input
+                          type="text"
+                          value={docTitle}
+                          onChange={(e) => setDocTitle(e.target.value)}
+                          placeholder="e.g. B.Tech Degree Certificate, Aadhaar Card, PAN Card"
+                          required
+                          className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                          Category *
+                        </label>
+                        <select
+                          value={docCategory}
+                          onChange={(e) => setDocCategory(e.target.value)}
+                          className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                        >
+                          <option value="Academic">Academic (Degrees, Marksheets, Transcripts)</option>
+                          <option value="Identification">Identification (Aadhaar, Passport, Voter ID)</option>
+                          <option value="Certifications">Certifications & Achievements</option>
+                          <option value="Experience & Letters">Experience & Recommendation Letters</option>
+                          <option value="Financial">Financial & Tax Documents</option>
+                          <option value="General">General / Other</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                        Description / Confidential Notes (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={docDescription}
+                        onChange={(e) => setDocDescription(e.target.value)}
+                        placeholder="e.g. Official CGEC B.Tech 8th Semester Grade Card & Degree"
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                      />
+                    </div>
+
+                    {/* PDF File Input Dropzone */}
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                        PDF Document File *
+                      </label>
+                      <div className="relative border-2 border-dashed border-slate-800 hover:border-emerald-500/60 rounded-2xl p-4 bg-slate-950/60 transition text-center cursor-pointer group">
+                        <input
+                          ref={docFileInputRef}
+                          type="file"
+                          accept=".pdf,application/pdf"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+                                showToast('Only PDF files are supported.', 'error');
+                                e.target.value = '';
+                                setDocFile(null);
+                                return;
+                              }
+                              setDocFile(file);
+                            }
+                          }}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <div className="flex flex-col items-center justify-center py-2 pointer-events-none">
+                          <FileText className="w-8 h-8 text-slate-500 group-hover:text-emerald-400 transition mb-2" />
+                          {docFile ? (
+                            <div>
+                              <p className="text-sm font-bold text-emerald-400">{docFile.name}</p>
+                              <p className="text-xs text-slate-400 mt-0.5">
+                                {(docFile.size / (1024 * 1024)).toFixed(2)} MB • Ready to upload
+                              </p>
+                            </div>
+                          ) : (
+                            <div>
+                              <p className="text-sm font-medium text-slate-300">
+                                Click or drag and drop your PDF document here
+                              </p>
+                              <p className="text-xs text-slate-500 mt-1">
+                                Securely uploaded and saved directly to your MongoDB and storage
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-2">
+                      <button
+                        type="submit"
+                        disabled={docUploading || !docFile || !docTitle.trim()}
+                        className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-md shadow-emerald-600/20 active:scale-95 transition disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                      >
+                        {docUploading ? (
+                          <>
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                            <span>Uploading Document...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4" />
+                            <span>Add Document to Vault</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Documents List & Explorer */}
+                <div className="space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+                    <div className="relative flex-1">
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={docSearch}
+                        onChange={(e) => setDocSearch(e.target.value)}
+                        placeholder="Search uploaded documents..."
+                        className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={refreshDocuments}
+                        className="p-2 rounded-xl text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 transition"
+                        title="Refresh List"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {documents.length === 0 ? (
+                    <div className="text-center py-12 rounded-2xl border border-dashed border-slate-800 bg-slate-900/30">
+                      <FileText className="w-10 h-10 text-slate-600 mx-auto mb-2" />
+                      <p className="text-sm font-semibold text-slate-300">No Personal Documents Uploaded Yet</p>
+                      <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                        Use the form above to upload your certificates, marksheets, or IDs in PDF format.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                      {documents
+                        .filter((d) => {
+                          const query = docSearch.toLowerCase().trim();
+                          if (!query) return true;
+                          return (
+                            d.title.toLowerCase().includes(query) ||
+                            d.category?.toLowerCase().includes(query) ||
+                            d.description?.toLowerCase().includes(query) ||
+                            d.originalName?.toLowerCase().includes(query)
+                          );
+                        })
+                        .map((doc) => (
+                          <div
+                            key={doc._id}
+                            className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 transition flex flex-col justify-between space-y-3"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex flex-col items-center justify-center shrink-0">
+                                <FileText className="w-5 h-5" />
+                                <span className="text-[8px] font-black uppercase leading-none mt-0.5">PDF</span>
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap mb-1">
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                    {doc.category || 'General'}
+                                  </span>
+                                  <span className="text-[11px] text-slate-500">
+                                    {doc.fileSize ? (doc.fileSize / (1024 * 1024)).toFixed(2) + ' MB' : 'PDF'}
+                                  </span>
+                                </div>
+
+                                <h4 className="text-sm font-bold text-white truncate" title={doc.title}>
+                                  {doc.title}
+                                </h4>
+
+                                {doc.description && (
+                                  <p className="text-xs text-slate-400 line-clamp-2 mt-0.5">{doc.description}</p>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-800/60 text-xs">
+                              <span className="text-[11px] text-slate-500">
+                                {new Date(doc.createdAt).toLocaleDateString()}
+                              </span>
+
+                              <div className="flex items-center gap-2">
+                                <a
+                                  href={doc.fileUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                                  title="Preview Document"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </a>
+
+                                <a
+                                  href={`/api/documents/download/${doc._id}`}
+                                  download
+                                  className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-slate-800 transition"
+                                  title="Download Document"
+                                >
+                                  <Download className="w-4 h-4" />
+                                </a>
+
+                                <button
+                                  type="button"
+                                  disabled={deletingDocId === doc._id}
+                                  onClick={() => handleDeleteDocument(doc._id, doc.title)}
+                                  className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
+                                  title="Delete Document"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
               </motion.div>
             )}
 

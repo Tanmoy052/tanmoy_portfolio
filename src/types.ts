@@ -83,3 +83,16 @@ export interface PortfolioData {
   projects: Project[];
   experiences: TimelineItem[];
 }
+
+export interface PersonalDocument {
+  _id: string;
+  title: string;
+  category: string;
+  description?: string;
+  fileName: string;
+  originalName: string;
+  fileUrl: string;
+  fileSize: number;
+  createdAt: string;
+  updatedAt?: string;
+}
