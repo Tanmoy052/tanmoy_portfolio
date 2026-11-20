@@ -5,7 +5,11 @@
       "destination": "https://tanmoy-portfolio-pp93.onrender.com/api/$1"
     },
     {
-      "source": "/((?!api|assets|.*\\..*).*)",
+      "source": "/documents/(.*)",
+      "destination": "https://tanmoy-portfolio-pp93.onrender.com/documents/$1"
+    },
+    {
+      "source": "/((?!api|assets|documents|.*\\..*).*)",
       "destination": "/index.html"
     }
   ]

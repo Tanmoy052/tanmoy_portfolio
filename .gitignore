@@ -6,3 +6,7 @@ coverage/
 *.log
 .env*
 !.env.example
+public/documents/*
+!public/documents/.gitkeep
+public/projects/*
+!public/projects/.gitkeep

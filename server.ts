@@ -121,7 +121,7 @@ const adminAccountSchema = new mongoose.Schema({
 });
 const AdminAccount: mongoose.Model<any> = mongoose.models.AdminAccount || mongoose.model("AdminAccount", adminAccountSchema);
 
-// Mongoose Personal Document Schema & Model for PDF Documents
+// Mongoose Personal Document Schema & Model for PDF Documents (Database-Backed Persistent Storage)
 const personalDocumentSchema = new mongoose.Schema({
   title: { type: String, required: true },
   category: { type: String, default: "General" },
@@ -130,6 +130,8 @@ const personalDocumentSchema = new mongoose.Schema({
   originalName: { type: String, required: true },
   fileUrl: { type: String, required: true },
   fileSize: { type: Number, default: 0 },
+  fileData: { type: Buffer, select: false }, // Binary PDF buffer stored directly in MongoDB Atlas
+  fileType: { type: String, default: "application/pdf" },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
@@ -456,6 +458,14 @@ async function startServer() {
 
         const fileUrl = `/documents/${req.file.filename}`;
 
+        // Read uploaded file buffer for persistent cloud storage in MongoDB Atlas
+        let fileBuffer: Buffer | undefined;
+        try {
+          fileBuffer = await fs.promises.readFile(req.file.path);
+        } catch (readErr) {
+          console.warn("Could not read uploaded file to buffer:", readErr);
+        }
+
         // Asynchronously sync to dist/documents in background if dist directory exists
         const distDocumentsDir = path.join(process.cwd(), "dist", "documents");
         if (fs.existsSync(path.join(process.cwd(), "dist"))) {
@@ -474,7 +484,9 @@ async function startServer() {
           fileName: req.file.filename,
           originalName: req.file.originalname,
           fileUrl,
-          fileSize: req.file.size || 0,
+          fileSize: req.file.size || fileBuffer?.length || 0,
+          fileData: fileBuffer,
+          fileType: req.file.mimetype || "application/pdf",
         });
 
         res.status(201).json({
@@ -520,7 +532,7 @@ async function startServer() {
     }
   });
 
-  // 5. GET Download Personal Document (Forces browser attachment download)
+  // 5. GET Download Personal Document (Hybrid Disk + Database-Backed Stream)
   app.get("/api/documents/download/:id", async (req, res) => {
     try {
       const { id } = req.params;
@@ -528,7 +540,51 @@ async function startServer() {
         return res.status(400).json({ error: "Invalid document ID." });
       }
 
-      const doc = await PersonalDocument.findById(id);
+      // Fetch document including binary buffer
+      const doc = await PersonalDocument.findById(id).select("+fileData");
+      if (!doc) {
+        return res.status(404).json({ error: "Document not found in vault." });
+      }
+
+      const safeDownloadName = (doc.originalName || `${doc.title}.pdf`).replace(/[^a-zA-Z0-9_.-]/g, "_");
+      const safeFileName = path.basename(doc.fileName);
+      let filePath = path.join(documentsUploadDir, safeFileName);
+
+      // Strategy 1: Fast local disk stream if physical file exists
+      if (fs.existsSync(filePath)) {
+        return res.download(filePath, safeDownloadName);
+      }
+      const altPath = path.join(publicDir, safeFileName);
+      if (fs.existsSync(altPath)) {
+        return res.download(altPath, safeDownloadName);
+      }
+
+      // Strategy 2: Stream directly from MongoDB Atlas binary buffer (cross-device & cloud deployments)
+      if (doc.fileData && doc.fileData.length > 0) {
+        // Self-heal disk cache in background
+        fs.promises.writeFile(filePath, doc.fileData).catch(() => {});
+        res.setHeader("Content-Type", doc.fileType || "application/pdf");
+        res.setHeader("Content-Disposition", `attachment; filename="${safeDownloadName}"`);
+        res.setHeader("Content-Length", doc.fileData.length);
+        return res.end(doc.fileData);
+      }
+
+      return res.status(404).json({ error: "Document file content not found on server or database." });
+    } catch (err: any) {
+      console.error("Document download error:", err);
+      res.status(500).json({ error: "Failed to download document." });
+    }
+  });
+
+  // 6. GET View / Preview Personal Document (Inline PDF Stream)
+  app.get("/api/documents/view/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: "Invalid document ID." });
+      }
+
+      const doc = await PersonalDocument.findById(id).select("+fileData");
       if (!doc) {
         return res.status(404).json({ error: "Document not found." });
       }
@@ -536,21 +592,54 @@ async function startServer() {
       const safeFileName = path.basename(doc.fileName);
       let filePath = path.join(documentsUploadDir, safeFileName);
       if (!fs.existsSync(filePath)) {
-        // Fallback to publicDir if it was a seeded file like Tanmoy_Pal_Resume.pdf
         const altPath = path.join(publicDir, safeFileName);
-        if (fs.existsSync(altPath)) {
-          filePath = altPath;
-        } else {
-          return res.status(404).json({ error: "Document file not found on server." });
-        }
+        if (fs.existsSync(altPath)) filePath = altPath;
       }
 
-      const safeDownloadName = (doc.originalName || `${doc.title}.pdf`).replace(/[^a-zA-Z0-9_.-]/g, "_");
-      res.download(filePath, safeDownloadName);
+      if (fs.existsSync(filePath)) {
+        res.setHeader("Content-Type", doc.fileType || "application/pdf");
+        res.setHeader("Content-Disposition", `inline; filename="${safeFileName}"`);
+        return fs.createReadStream(filePath).pipe(res);
+      }
+
+      if (doc.fileData && doc.fileData.length > 0) {
+        fs.promises.writeFile(filePath, doc.fileData).catch(() => {});
+        res.setHeader("Content-Type", doc.fileType || "application/pdf");
+        res.setHeader("Content-Disposition", `inline; filename="${safeFileName}"`);
+        res.setHeader("Content-Length", doc.fileData.length);
+        return res.end(doc.fileData);
+      }
+
+      return res.status(404).json({ error: "Document content unavailable." });
     } catch (err: any) {
-      console.error("Document download error:", err);
-      res.status(500).json({ error: "Failed to download document." });
+      console.error("Document view error:", err);
+      res.status(500).json({ error: "Failed to view document." });
     }
+  });
+
+  // Fallback for direct /documents/:fileName route
+  app.get("/documents/:fileName", async (req, res, next) => {
+    const safeFileName = path.basename(req.params.fileName);
+    const filePath = path.join(documentsUploadDir, safeFileName);
+    if (fs.existsSync(filePath)) {
+      return res.sendFile(filePath);
+    }
+    const altPath = path.join(publicDir, safeFileName);
+    if (fs.existsSync(altPath)) {
+      return res.sendFile(altPath);
+    }
+
+    try {
+      const doc = await PersonalDocument.findOne({ fileName: safeFileName }).select("+fileData");
+      if (doc && doc.fileData && doc.fileData.length > 0) {
+        fs.promises.writeFile(filePath, doc.fileData).catch(() => {});
+        res.setHeader("Content-Type", doc.fileType || "application/pdf");
+        res.setHeader("Content-Disposition", `inline; filename="${safeFileName}"`);
+        return res.end(doc.fileData);
+      }
+    } catch (e) {}
+
+    res.status(404).json({ error: "File not found on server or database." });
   });
 
   // GET Dynamic Portfolio Content

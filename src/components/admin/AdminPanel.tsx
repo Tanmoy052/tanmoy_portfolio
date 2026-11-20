@@ -2404,11 +2404,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToPortfolio, onLog
                         <input
                           ref={docFileInputRef}
                           type="file"
-                          accept=".pdf,application/pdf"
+                          accept=".pdf,application/pdf,application/x-pdf,application/octet-stream"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) {
-                              if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+                              const isPdf =
+                                file.name.toLowerCase().endsWith('.pdf') ||
+                                file.type.toLowerCase().includes('pdf') ||
+                                file.type === '' ||
+                                file.type === 'application/octet-stream';
+                              if (!isPdf) {
                                 showToast('Only PDF files are supported.', 'error');
                                 e.target.value = '';
                                 setDocFile(null);
@@ -2548,10 +2553,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToPortfolio, onLog
 
                               <div className="flex items-center gap-2">
                                 <a
-                                  href={doc.fileUrl}
+                                  href={`/api/documents/view/${doc._id}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
                                   title="Preview Document"
                                 >
                                   <Eye className="w-4 h-4" />

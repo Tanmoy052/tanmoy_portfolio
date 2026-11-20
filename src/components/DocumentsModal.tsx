@@ -582,10 +582,10 @@ export const DocumentsModal: React.FC<DocumentsModalProps> = ({
                   </a>
 
                   <a
-                    href={previewDoc.fileUrl}
+                    href={`/api/documents/view/${previewDoc._id}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
                     title="Open in New Tab"
                   >
                     <ExternalLink className="w-4 h-4" />
@@ -616,7 +616,7 @@ export const DocumentsModal: React.FC<DocumentsModalProps> = ({
               {/* Iframe for PDF rendering */}
               <div className="flex-1 bg-slate-950 overflow-hidden">
                 <iframe
-                  src={`${previewDoc.fileUrl}#toolbar=1&navpanes=0`}
+                  src={`/api/documents/view/${previewDoc._id}#toolbar=1&navpanes=0`}
                   title={previewDoc.title}
                   className="w-full h-full border-none"
                 />
