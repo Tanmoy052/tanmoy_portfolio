@@ -49,7 +49,10 @@ interface PortfolioContextType {
   verifyDocumentsAuth: (identifier: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   logoutDocuments: () => void;
   refreshDocuments: () => Promise<void>;
-  uploadDocumentFile: (formData: FormData) => Promise<{ success: boolean; data?: PersonalDocument; error?: string }>;
+  uploadDocumentFile: (
+    formData: FormData,
+    onProgress?: (percent: number) => void
+  ) => Promise<{ success: boolean; data?: PersonalDocument; error?: string }>;
   deleteDocumentFile: (id: string) => Promise<boolean>;
 }
 
@@ -292,26 +295,47 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const uploadDocumentFile = async (
-    formData: FormData
+    formData: FormData,
+    onProgress?: (percent: number) => void
   ): Promise<{ success: boolean; data?: PersonalDocument; error?: string }> => {
-    try {
-      const res = await fetch('/api/admin/documents', {
-        method: 'POST',
-        body: formData,
-      });
-      const json = await res.json();
-      if (res.ok && json.success) {
-        if (json.data) {
-          // Instant state update with newly created document
-          setDocuments((prev) => [json.data, ...prev.filter((d) => d._id !== json.data._id)]);
-        }
-        setLastSaved(new Date().toLocaleTimeString());
-        return { success: true, data: json.data };
+    return new Promise((resolve) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/admin/documents');
+
+      if (xhr.upload && onProgress) {
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable && event.total > 0) {
+            const percentComplete = Math.min(99, Math.round((event.loaded / event.total) * 100));
+            onProgress(percentComplete);
+          }
+        };
       }
-      return { success: false, error: json.error || 'Upload failed' };
-    } catch (err: any) {
-      return { success: false, error: err.message || 'Network error uploading document' };
-    }
+
+      xhr.onload = () => {
+        try {
+          const json = JSON.parse(xhr.responseText);
+          if (xhr.status >= 200 && xhr.status < 300 && json.success) {
+            if (onProgress) onProgress(100);
+            if (json.data) {
+              // Instant state update with newly created document
+              setDocuments((prev) => [json.data, ...prev.filter((d) => d._id !== json.data._id)]);
+            }
+            setLastSaved(new Date().toLocaleTimeString());
+            resolve({ success: true, data: json.data });
+          } else {
+            resolve({ success: false, error: json.error || 'Upload failed' });
+          }
+        } catch (e: any) {
+          resolve({ success: false, error: 'Failed to parse server response' });
+        }
+      };
+
+      xhr.onerror = () => {
+        resolve({ success: false, error: 'Network error uploading document. Please check connection.' });
+      };
+
+      xhr.send(formData);
+    });
   };
 
   const deleteDocumentFile = async (id: string): Promise<boolean> => {
@@ -346,6 +370,13 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     refreshContacts();
     fetchAdminUser();
     refreshDocuments();
+
+    // Background keep-alive to keep cloud backend warm and eliminate cold-start latency
+    const keepAliveTimer = setInterval(() => {
+      fetch('/api/health').catch(() => {});
+    }, 4 * 60 * 1000); // Ping every 4 minutes while browser session is active
+
+    return () => clearInterval(keepAliveTimer);
   }, []);
 
   return (

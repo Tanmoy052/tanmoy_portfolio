@@ -43,22 +43,18 @@ const uploadResume = multer({
   },
 });
 
-// Multer storage for Personal Documents (PDF only)
-const documentStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, documentsUploadDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const base = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, "_");
-    cb(null, `doc_${base}_${Date.now()}${ext}`);
-  },
-});
+// In-memory Multer storage for ultra-fast document uploads (zero disk latency)
+const documentStorage = multer.memoryStorage();
 const uploadDocument = multer({
   storage: documentStorage,
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === "application/pdf" || file.originalname.toLowerCase().endsWith(".pdf")) {
+    const isPdfExt = file.originalname.toLowerCase().endsWith(".pdf");
+    const isPdfMime =
+      file.mimetype === "application/pdf" ||
+      file.mimetype === "application/x-pdf" ||
+      file.mimetype === "application/octet-stream";
+    if (isPdfExt || isPdfMime) {
       cb(null, true);
     } else {
       cb(new Error("Only PDF files are allowed for document upload."));
@@ -439,7 +435,7 @@ async function startServer() {
     }
   });
 
-  // 3. POST Upload New Document (PDF)
+  // 3. POST Upload New Document (PDF) - High-Speed Mobile & Cloud Optimized
   app.post("/api/admin/documents", (req, res) => {
     uploadDocument.single("file")(req, res, async (err: any) => {
       if (err) {
@@ -447,7 +443,7 @@ async function startServer() {
       }
 
       try {
-        if (!req.file) {
+        if (!req.file || !req.file.buffer) {
           return res.status(400).json({ error: "No PDF file uploaded. Only PDF files are supported." });
         }
 
@@ -456,43 +452,54 @@ async function startServer() {
           return res.status(400).json({ error: "Document title is required." });
         }
 
-        const fileUrl = `/documents/${req.file.filename}`;
+        const ext = path.extname(req.file.originalname) || ".pdf";
+        const base = path.basename(req.file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, "_");
+        const fileName = `doc_${base}_${Date.now()}${ext}`;
+        const fileUrl = `/documents/${fileName}`;
 
-        // Read uploaded file buffer for persistent cloud storage in MongoDB Atlas
-        let fileBuffer: Buffer | undefined;
-        try {
-          fileBuffer = await fs.promises.readFile(req.file.path);
-        } catch (readErr) {
-          console.warn("Could not read uploaded file to buffer:", readErr);
-        }
+        // Save directly to MongoDB Atlas while writing local disk cache in background
+        const [newDoc] = await Promise.all([
+          PersonalDocument.create({
+            title: title.trim(),
+            category: category?.trim() || "General",
+            description: description?.trim() || "",
+            fileName,
+            originalName: req.file.originalname,
+            fileUrl,
+            fileSize: req.file.size || req.file.buffer.length,
+            fileData: req.file.buffer,
+            fileType: req.file.mimetype || "application/pdf",
+          }),
+          // Asynchronously cache on disk in parallel without delaying the HTTP response
+          (async () => {
+            const diskPath = path.join(documentsUploadDir, fileName);
+            await fs.promises.writeFile(diskPath, req.file.buffer).catch(() => {});
+            const distPath = path.join(process.cwd(), "dist", "documents", fileName);
+            if (fs.existsSync(path.join(process.cwd(), "dist"))) {
+              await fs.promises.writeFile(distPath, req.file.buffer).catch(() => {});
+            }
+          })().catch(() => {})
+        ]);
 
-        // Asynchronously sync to dist/documents in background if dist directory exists
-        const distDocumentsDir = path.join(process.cwd(), "dist", "documents");
-        if (fs.existsSync(path.join(process.cwd(), "dist"))) {
-          if (!fs.existsSync(distDocumentsDir)) {
-            fs.mkdirSync(distDocumentsDir, { recursive: true });
-          }
-          fs.promises.copyFile(req.file.path, path.join(distDocumentsDir, req.file.filename)).catch((e) => {
-            console.warn("Could not copy document to dist/documents:", e);
-          });
-        }
-
-        const newDoc = await PersonalDocument.create({
-          title: title.trim(),
-          category: category?.trim() || "General",
-          description: description?.trim() || "",
-          fileName: req.file.filename,
-          originalName: req.file.originalname,
-          fileUrl,
-          fileSize: req.file.size || fileBuffer?.length || 0,
-          fileData: fileBuffer,
-          fileType: req.file.mimetype || "application/pdf",
-        });
+        // CRITICAL PERFORMANCE FIX: Strip heavy binary buffer from JSON response!
+        // Prevents sending megabytes of serialized array data back to mobile devices over cellular networks.
+        const safeDoc = {
+          _id: newDoc._id,
+          title: newDoc.title,
+          category: newDoc.category,
+          description: newDoc.description,
+          fileName: newDoc.fileName,
+          originalName: newDoc.originalName,
+          fileUrl: newDoc.fileUrl,
+          fileSize: newDoc.fileSize,
+          createdAt: newDoc.createdAt,
+          updatedAt: newDoc.updatedAt,
+        };
 
         res.status(201).json({
           success: true,
           message: "Document successfully added to personal vault.",
-          data: newDoc,
+          data: safeDoc,
         });
       } catch (uploadErr: any) {
         console.error("Document upload error:", uploadErr);

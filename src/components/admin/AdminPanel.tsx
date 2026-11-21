@@ -134,6 +134,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToPortfolio, onLog
   const [docDescription, setDocDescription] = useState('');
   const [docFile, setDocFile] = useState<File | null>(null);
   const [docUploading, setDocUploading] = useState(false);
+  const [docUploadProgress, setDocUploadProgress] = useState<number>(0);
   const [docSearch, setDocSearch] = useState('');
   const [docCategoryFilter, setDocCategoryFilter] = useState('All');
   const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
@@ -212,14 +213,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToPortfolio, onLog
     }
 
     setDocUploading(true);
+    setDocUploadProgress(0);
     const formData = new FormData();
     formData.append('title', docTitle.trim());
     formData.append('category', docCategory);
     formData.append('description', docDescription.trim());
     formData.append('file', docFile);
 
-    const res = await uploadDocumentFile(formData);
+    const res = await uploadDocumentFile(formData, (percent) => {
+      setDocUploadProgress(percent);
+    });
     setDocUploading(false);
+    setDocUploadProgress(0);
 
     if (res.success) {
       showToast(`Document "${docTitle}" added to vault!`, 'success');
@@ -2447,6 +2452,29 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToPortfolio, onLog
                       </div>
                     </div>
 
+                    {/* Live Upload Progress Indicator for Mobile & Cellular Networks */}
+                    {docUploading && (
+                      <div className="space-y-1.5 pt-1">
+                        <div className="flex items-center justify-between text-xs text-slate-400">
+                          <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            {docUploadProgress < 100
+                              ? `Uploading to Cloud Vault: ${docUploadProgress}%`
+                              : 'Securing Document in MongoDB Atlas...'}
+                          </span>
+                          <span className="font-mono text-[11px] text-slate-500">
+                            {docUploadProgress}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
+                          <div
+                            className="bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 h-full transition-all duration-200 rounded-full"
+                            style={{ width: `${Math.max(docUploadProgress, 5)}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex justify-end pt-2">
                       <button
                         type="submit"
@@ -2456,7 +2484,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToPortfolio, onLog
                         {docUploading ? (
                           <>
                             <RefreshCw className="w-4 h-4 animate-spin" />
-                            <span>Uploading Document...</span>
+                            <span>
+                              {docUploadProgress > 0 && docUploadProgress < 100
+                                ? `Uploading ${docUploadProgress}%...`
+                                : 'Saving to Cloud...'}
+                            </span>
                           </>
                         ) : (
                           <>
